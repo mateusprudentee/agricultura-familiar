@@ -9,6 +9,9 @@ export default defineConfig((/* ctx */) => {
     extras: [
       'roboto-font',
       'material-icons',
+      'material-icons',
+  'material-symbols-outlined',
+      'fontawesome-v6'
     ],
 
     build: {
@@ -37,6 +40,8 @@ export default defineConfig((/* ctx */) => {
     },
 
     framework: {
+      lang: 'pt-br',
+      dark: false,
       config: {},
       iconSet: 'material-icons',
       plugins: [],

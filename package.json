@@ -16,11 +16,21 @@
   },
   "dependencies": {
     "@fontsource/ubuntu": "^5.2.8",
-    "@quasar/extras": "^1.16.4",
+    "@quasar/extras": "^1.18.0",
+    "apexcharts": "^5.10.3",
+    "axios": "^1.13.6",
+    "chart.js": "^4.5.1",
+    "jspdf": "^4.2.0",
+    "leaflet": "^1.9.4",
+    "leaflet-draw": "^1.0.4",
+    "qrcode": "^1.5.4",
     "quasar": "^2.16.0",
     "sitemap": "^8.0.3",
     "vue": "^3.5.22",
-    "vue-router": "^5.0.0"
+    "vue-chart-3": "^4.0.1",
+    "vue-router": "^5.0.0",
+    "vue3-apexcharts": "^1.11.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/js": "^9.14.0",
