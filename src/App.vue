@@ -51,7 +51,19 @@
                       :active="isActive || activePage === 'dashboard'"
                       @click="navigate"
                     >
-                      <q-item-section>Visão Geral</q-item-section>
+                      <q-item-section>Visão geral </q-item-section>
+                    </q-item>
+                  </router-link>
+
+                   <router-link to="/relatorio" custom v-slot="{ navigate, isActive }">
+                    <q-item
+                      clickable
+                      v-ripple
+                      class="menu-item"
+                      :active="isActive || activePage === 'dashboard-relatorio'"
+                      @click="navigate"
+                    >
+                      <q-item-section>Relatórios</q-item-section>
                     </q-item>
                   </router-link>
                 </div>
