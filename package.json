@@ -19,7 +19,7 @@
     "@mdi/font": "^7.4.47",
     "@quasar/extras": "^1.18.0",
     "apexcharts": "^5.10.3",
-    "axios": "^1.13.6",
+    "axios": "^1.15.0",
     "chart.js": "^4.5.1",
     "jspdf": "^4.2.0",
     "leaflet": "^1.9.4",

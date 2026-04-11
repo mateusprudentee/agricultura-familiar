@@ -4,16 +4,14 @@ const routes = [
     component: () => import('layouts/AuthLayout.vue'),
     children: [
       {
-        path: '',  // Isso vai renderizar LoginPage quando acessar /login
+        path: '',
         component: () => import('pages/LoginPage.vue')
-      },
-    ],
+      }
+    ]
   },
-
   {
-    // TUDO AQUI  ABAIXO TEM O NAVBAR JUNTO
     path: '/',
-    component: () => import('layouts/MainLayout.vue'), // Crie este componente
+    component: () => import('layouts/MainLayout.vue'),
     children: [
       {
         path: '',
@@ -24,15 +22,15 @@ const routes = [
         component: () => import('pages/DashboardPage.vue')
       },
       {
-    path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorPage.vue'),
-  }
-
+        path: 'ia',
+        component: () => import('pages/IAPage.vue')
+      }
     ]
   },
-
-  // TUDO AQUI ABAIXO ESTÁ FORA DO NAVBAR
-
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/ErrorPage.vue')
+  }
 ]
 
 export default routes
