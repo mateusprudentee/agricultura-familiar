@@ -1,414 +1,790 @@
 <template>
   <q-layout view="lHh Lpr lFf" class="bg-grey-1">
-    <!-- Sidebar Lateral Esquerda estilo NamelessMC -->
+    <!-- Sidebar -->
     <q-drawer
       v-model="leftDrawerOpen"
       show-if-above
       side="left"
       bordered
       :width="280"
-      :mini="!leftDrawerOpen"
-      :mini-width="80"
+      :mini="miniState"
+      :mini-width="100"
       class="sidebar-nameless"
       :behavior="'desktop'"
+      @update:model-value="handleDrawerChange"
     >
+      <!-- Ícone de toggle -->
+      <div class="toggle-icon-container">
+        <q-icon
+          :name="miniState ? 'chevron_right' : 'chevron_left'"
+          class="close-nav-icon"
+          @click="toggleDrawer"
+        />
+      </div>
+
       <div class="sidebar-content">
-        <!-- Logo Area -->
-        <div class="sidebar-logo">
+        <!-- Logo -->
+        <div class="sidebar-logo" :class="{ 'sidebar-logo-mini': miniState }">
           <div class="logo-container">
             <router-link to="/">
-  <div class="logo-area"></div>
-</router-link>
-<router-link to="/" custom v-slot="{ navigate }">
-  <span class="logo-text" @click="navigate">
-    Agricultura Familiar em Mato Grosso
-  </span>
-</router-link>
-
+              <div
+                class="logo-area"
+                :class="{ 'logo-area-mini': miniState }"
+              ></div>
+            </router-link>
+            <router-link to="/" custom v-slot="{ navigate }">
+              <span class="logo-text" @click="navigate">
+                Agricultura Familiar em Mato Grosso
+              </span>
+            </router-link>
           </div>
         </div>
 
-        <!-- Menu de Navegação com Dropdowns -->
+        <!-- Menu -->
         <q-scroll-area class="sidebar-menu">
           <div class="menu-sections">
-            <!-- Dashboard -->
-            <div class="menu-section">
- <q-expansion-item
-  expand-separator
-  icon="dashboard"
-  :label="leftDrawerOpen ? 'Dashboard' : ''"
-  header-class="menu-expansion-header"
-  class="menu-expansion dashboard-icon"
-  :model-value="activeSection === 'dashboard'"
-  @click="toggleSection('dashboard')"
->
-                <div class="menu-items" v-if="leftDrawerOpen">
-                  <router-link to="/dashboard" custom v-slot="{ navigate, isActive }">
-                    <q-item
-                      clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'dashboard'"
-                      @click="navigate"
-                    >
-                      <q-item-section>Visão geral </q-item-section>
-                    </q-item>
-                  </router-link>
+            <!-- Dashboard (modo normal) -->
+            <div v-if="!miniState" class="menu-section">
+              <q-item
+                clickable
+                v-ripple
+                class="menu-expansion-header dashboard-color"
+                :class="{ 'menu-active': activeMenu === 'dashboard' }"
+                @click="toggleSubmenu('dashboard')"
+              >
+                <q-item-section avatar>
+                  <q-icon name="dashboard" />
+                </q-item-section>
+                <q-item-section>Dashboard</q-item-section>
+                <q-item-section side>
+                  <q-icon :name="activeMenu === 'dashboard' ? 'expand_less' : 'expand_more'" />
+                </q-item-section>
+              </q-item>
+              <div v-if="activeMenu === 'dashboard'" class="menu-items">
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/dashboard') }"
+                  @click="navigateTo('/dashboard')"
+                >
+                  <q-item-section>Visão geral</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/relatorio') }"
+                  @click="navigateTo('/relatorio')"
+                >
+                  <q-item-section>Relatórios</q-item-section>
+                </q-item>
+              </div>
+            </div>
 
-                   <router-link to="/relatorio" custom v-slot="{ navigate, isActive }">
+            <!-- Dashboard (modo mini hover) -->
+            <div v-else class="menu-section">
+              <div
+                class="menu-hover-container"
+                @mouseenter="openHoverMenu('dashboard')"
+                @mouseleave="closeHoverMenuWithDelay('dashboard')"
+              >
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-expansion-header dashboard-color"
+                  :class="{ 'menu-active': isActiveRoute('/dashboard') || isActiveRoute('/relatorio') }"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="dashboard" />
+                  </q-item-section>
+                </q-item>
+                <q-menu
+                  ref="dashboardMenuRef"
+                  :model-value="hoverMenuActive === 'dashboard'"
+                  anchor="top right"
+                  self="top left"
+                  :offset="[5, 0]"
+                  class="hover-menu"
+                  @mouseenter="cancelCloseHoverMenu"
+                  @mouseleave="closeHoverMenu('dashboard')"
+                >
+                  <q-list dense>
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'dashboard-relatorio'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/dashboard') }"
+                      @click="navigateTo('/dashboard')"
+                    >
+                      <q-item-section>Visão geral</q-item-section>
+                    </q-item>
+                    <q-item
+                      clickable
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/relatorio') }"
+                      @click="navigateTo('/relatorio')"
                     >
                       <q-item-section>Relatórios</q-item-section>
                     </q-item>
-                  </router-link>
-                </div>
-              </q-expansion-item>
+                  </q-list>
+                </q-menu>
+              </div>
             </div>
 
-            <!-- Financiamento e Recursos -->
-            <div class="menu-section">
-              <q-expansion-item
-                expand-separator
-                icon="payments"
-                :label="leftDrawerOpen ? 'Financiamento' : ''"
-                header-class="menu-expansion-header"
-                class="menu-expansion financiamento-icon"
-                :default-opened="activeSection === 'financiamento' && leftDrawerOpen"
-                @click="toggleSection('financiamento')"
+            <!-- Financiamento (modo normal) -->
+            <div v-if="!miniState" class="menu-section">
+              <q-item
+                clickable
+                v-ripple
+                class="menu-expansion-header financiamento-color"
+                :class="{ 'menu-active': activeMenu === 'financiamento' }"
+                @click="toggleSubmenu('financiamento')"
               >
-                <div class="menu-items" v-if="leftDrawerOpen">
-                  <router-link to="/verbas-por-municipio" custom v-slot="{ navigate, isActive }">
+                <q-item-section avatar>
+                  <q-icon name="payments" />
+                </q-item-section>
+                <q-item-section>Financiamento</q-item-section>
+                <q-item-section side>
+                  <q-icon :name="activeMenu === 'financiamento' ? 'expand_less' : 'expand_more'" />
+                </q-item-section>
+              </q-item>
+              <div v-if="activeMenu === 'financiamento'" class="menu-items">
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/verbas-por-municipio') }"
+                  @click="navigateTo('/verbas-por-municipio')"
+                >
+                  <q-item-section>Verbas por Município</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/repasses-auxilios-pnae') }"
+                  @click="navigateTo('/repasses-auxilios-pnae')"
+                >
+                  <q-item-section>Repasses e Auxílios PNAE</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/evolucao-2-anos') }"
+                  @click="navigateTo('/evolucao-2-anos')"
+                >
+                  <q-item-section>Evolução (2 anos)</q-item-section>
+                </q-item>
+              </div>
+            </div>
+
+            <!-- Financiamento (modo mini hover) -->
+            <div v-else class="menu-section">
+              <div
+                class="menu-hover-container"
+                @mouseenter="openHoverMenu('financiamento')"
+                @mouseleave="closeHoverMenuWithDelay('financiamento')"
+              >
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-expansion-header financiamento-color"
+                  :class="{ 'menu-active': isFinanciamentoActive() }"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="payments" />
+                  </q-item-section>
+                </q-item>
+                <q-menu
+                  ref="financiamentoMenuRef"
+                  :model-value="hoverMenuActive === 'financiamento'"
+                  anchor="top right"
+                  self="top left"
+                  :offset="[5, 0]"
+                  class="hover-menu"
+                  @mouseenter="cancelCloseHoverMenu"
+                  @mouseleave="closeHoverMenu('financiamento')"
+                >
+                  <q-list dense>
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'verbas'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/verbas-por-municipio') }"
+                      @click="navigateTo('/verbas-por-municipio')"
                     >
                       <q-item-section>Verbas por Município</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/repasses-auxilios-pnae" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'repasses'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/repasses-auxilios-pnae') }"
+                      @click="navigateTo('/repasses-auxilios-pnae')"
                     >
                       <q-item-section>Repasses e Auxílios PNAE</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/evolucao-2-anos" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'evolucao'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/evolucao-2-anos') }"
+                      @click="navigateTo('/evolucao-2-anos')"
                     >
                       <q-item-section>Evolução (2 anos)</q-item-section>
                     </q-item>
-                  </router-link>
-                </div>
-              </q-expansion-item>
+                  </q-list>
+                </q-menu>
+              </div>
             </div>
 
-            <!-- Capacidade Produtiva -->
-            <div class="menu-section">
-              <q-expansion-item
-                expand-separator
-                icon="agriculture"
-                :label="leftDrawerOpen ? 'Capacidade Produtiva' : ''"
-                header-class="menu-expansion-header"
-                class="menu-expansion capacidade-icon"
-                :default-opened="activeSection === 'capacidade' && leftDrawerOpen"
-                @click="toggleSection('capacidade')"
+            <!-- Capacidade Produtiva (modo normal) -->
+            <div v-if="!miniState" class="menu-section">
+              <q-item
+                clickable
+                v-ripple
+                class="menu-expansion-header capacidade-color"
+                :class="{ 'menu-active': activeMenu === 'capacidade' }"
+                @click="toggleSubmenu('capacidade')"
               >
-                <div class="menu-items" v-if="leftDrawerOpen">
-                  <router-link to="/capacidade-por-municipio" custom v-slot="{ navigate, isActive }">
+                <q-item-section avatar>
+                  <q-icon name="agriculture" />
+                </q-item-section>
+                <q-item-section>Capacidade Produtiva</q-item-section>
+                <q-item-section side>
+                  <q-icon :name="activeMenu === 'capacidade' ? 'expand_less' : 'expand_more'" />
+                </q-item-section>
+              </q-item>
+              <div v-if="activeMenu === 'capacidade'" class="menu-items">
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/capacidade-por-municipio') }"
+                  @click="navigateTo('/capacidade-por-municipio')"
+                >
+                  <q-item-section>Capacidade por Município</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/associacoes-cooperativas') }"
+                  @click="navigateTo('/associacoes-cooperativas')"
+                >
+                  <q-item-section>Associações/Cooperativas</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/assistencia-tecnica') }"
+                  @click="navigateTo('/assistencia-tecnica')"
+                >
+                  <q-item-section>Assistência Técnica</q-item-section>
+                </q-item>
+              </div>
+            </div>
+
+            <!-- Capacidade (modo mini hover) -->
+            <div v-else class="menu-section">
+              <div
+                class="menu-hover-container"
+                @mouseenter="openHoverMenu('capacidade')"
+                @mouseleave="closeHoverMenuWithDelay('capacidade')"
+              >
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-expansion-header capacidade-color"
+                  :class="{ 'menu-active': isCapacidadeActive() }"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="agriculture" />
+                  </q-item-section>
+                </q-item>
+                <q-menu
+                  ref="capacidadeMenuRef"
+                  :model-value="hoverMenuActive === 'capacidade'"
+                  anchor="top right"
+                  self="top left"
+                  :offset="[5, 0]"
+                  class="hover-menu"
+                  @mouseenter="cancelCloseHoverMenu"
+                  @mouseleave="closeHoverMenu('capacidade')"
+                >
+                  <q-list dense>
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'capacidade'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/capacidade-por-municipio') }"
+                      @click="navigateTo('/capacidade-por-municipio')"
                     >
                       <q-item-section>Capacidade por Município</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/associacoes-cooperativas" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'associacoes'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/associacoes-cooperativas') }"
+                      @click="navigateTo('/associacoes-cooperativas')"
                     >
                       <q-item-section>Associações/Cooperativas</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/assistencia-tecnica" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'assistencia'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/assistencia-tecnica') }"
+                      @click="navigateTo('/assistencia-tecnica')"
                     >
                       <q-item-section>Assistência Técnica</q-item-section>
                     </q-item>
-                  </router-link>
-                </div>
-              </q-expansion-item>
+                  </q-list>
+                </q-menu>
+              </div>
             </div>
 
-            <!-- Indicadores Municipais -->
-            <div class="menu-section">
-              <q-expansion-item
-                expand-separator
-                icon="analytics"
-                :label="leftDrawerOpen ? 'Indicadores Municipais' : ''"
-                header-class="menu-expansion-header"
-                class="menu-expansion indicadores-icon"
-                :default-opened="activeSection === 'indicadores' && leftDrawerOpen"
-                @click="toggleSection('indicadores')"
+            <!-- Indicadores Municipais (modo normal) -->
+            <div v-if="!miniState" class="menu-section">
+              <q-item
+                clickable
+                v-ripple
+                class="menu-expansion-header indicadores-color"
+                :class="{ 'menu-active': activeMenu === 'indicadores' }"
+                @click="toggleSubmenu('indicadores')"
               >
-                <div class="menu-items" v-if="leftDrawerOpen">
-                  <router-link to="/dependencia-agricultura" custom v-slot="{ navigate, isActive }">
+                <q-item-section avatar>
+                  <q-icon name="analytics" />
+                </q-item-section>
+                <q-item-section>Indicadores Municipais</q-item-section>
+                <q-item-section side>
+                  <q-icon :name="activeMenu === 'indicadores' ? 'expand_less' : 'expand_more'" />
+                </q-item-section>
+              </q-item>
+              <div v-if="activeMenu === 'indicadores'" class="menu-items">
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/dependencia-agricultura') }"
+                  @click="navigateTo('/dependencia-agricultura')"
+                >
+                  <q-item-section>Dependência da Agricultura</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/secretaria-especifica') }"
+                  @click="navigateTo('/secretaria-especifica')"
+                >
+                  <q-item-section>Secretaria Específica</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/populacao-demanda') }"
+                  @click="navigateTo('/populacao-demanda')"
+                >
+                  <q-item-section>População e Demanda</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/agricultores-ativos-mt') }"
+                  @click="navigateTo('/agricultores-ativos-mt')"
+                >
+                  <q-item-section>Agricultores Ativos (MT)</q-item-section>
+                </q-item>
+              </div>
+            </div>
+
+            <!-- Indicadores (modo mini hover) -->
+            <div v-else class="menu-section">
+              <div
+                class="menu-hover-container"
+                @mouseenter="openHoverMenu('indicadores')"
+                @mouseleave="closeHoverMenuWithDelay('indicadores')"
+              >
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-expansion-header indicadores-color"
+                  :class="{ 'menu-active': isIndicadoresActive() }"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="analytics" />
+                  </q-item-section>
+                </q-item>
+                <q-menu
+                  ref="indicadoresMenuRef"
+                  :model-value="hoverMenuActive === 'indicadores'"
+                  anchor="top right"
+                  self="top left"
+                  :offset="[5, 0]"
+                  class="hover-menu"
+                  @mouseenter="cancelCloseHoverMenu"
+                  @mouseleave="closeHoverMenu('indicadores')"
+                >
+                  <q-list dense>
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'dependencia'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/dependencia-agricultura') }"
+                      @click="navigateTo('/dependencia-agricultura')"
                     >
                       <q-item-section>Dependência da Agricultura</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/secretaria-especifica" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'secretaria'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/secretaria-especifica') }"
+                      @click="navigateTo('/secretaria-especifica')"
                     >
                       <q-item-section>Secretaria Específica</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/populacao-demanda" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'populacao'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/populacao-demanda') }"
+                      @click="navigateTo('/populacao-demanda')"
                     >
                       <q-item-section>População e Demanda</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/agricultores-ativos-mt" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'agricultores'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/agricultores-ativos-mt') }"
+                      @click="navigateTo('/agricultores-ativos-mt')"
                     >
                       <q-item-section>Agricultores Ativos (MT)</q-item-section>
                     </q-item>
-                  </router-link>
-                </div>
-              </q-expansion-item>
+                  </q-list>
+                </q-menu>
+              </div>
             </div>
 
-            <!-- PNAE - Merenda Escolar -->
-            <div class="menu-section">
-              <q-expansion-item
-                expand-separator
-                icon="school"
-                :label="leftDrawerOpen ? 'PNAE - Merenda Escolar' : ''"
-                header-class="menu-expansion-header"
-                class="menu-expansion pnae-icon"
-                :default-opened="activeSection === 'pnae' && leftDrawerOpen"
-                @click="toggleSection('pnae')"
+            <!-- PNAE (modo normal) -->
+            <div v-if="!miniState" class="menu-section">
+              <q-item
+                clickable
+                v-ripple
+                class="menu-expansion-header pnae-color"
+                :class="{ 'menu-active': activeMenu === 'pnae' }"
+                @click="toggleSubmenu('pnae')"
               >
-                <div class="menu-items" v-if="leftDrawerOpen">
-                  <router-link to="/cumprimento-pnae" custom v-slot="{ navigate, isActive }">
+                <q-item-section avatar>
+                  <q-icon name="school" />
+                </q-item-section>
+                <q-item-section>PNAE - Merenda Escolar</q-item-section>
+                <q-item-section side>
+                  <q-icon :name="activeMenu === 'pnae' ? 'expand_less' : 'expand_more'" />
+                </q-item-section>
+              </q-item>
+              <div v-if="activeMenu === 'pnae'" class="menu-items">
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/cumprimento-pnae') }"
+                  @click="navigateTo('/cumprimento-pnae')"
+                >
+                  <q-item-section>Cumprimento do PNAE</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/escolas-beneficiadas') }"
+                  @click="navigateTo('/escolas-beneficiadas')"
+                >
+                  <q-item-section>Escolas Beneficiadas</q-item-section>
+                </q-item>
+              </div>
+            </div>
+
+            <!-- PNAE (modo mini hover) -->
+            <div v-else class="menu-section">
+              <div
+                class="menu-hover-container"
+                @mouseenter="openHoverMenu('pnae')"
+                @mouseleave="closeHoverMenuWithDelay('pnae')"
+              >
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-expansion-header pnae-color"
+                  :class="{ 'menu-active': isPnaeActive() }"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="school" />
+                  </q-item-section>
+                </q-item>
+                <q-menu
+                  ref="pnaeMenuRef"
+                  :model-value="hoverMenuActive === 'pnae'"
+                  anchor="top right"
+                  self="top left"
+                  :offset="[5, 0]"
+                  class="hover-menu"
+                  @mouseenter="cancelCloseHoverMenu"
+                  @mouseleave="closeHoverMenu('pnae')"
+                >
+                  <q-list dense>
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'cumprimento'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/cumprimento-pnae') }"
+                      @click="navigateTo('/cumprimento-pnae')"
                     >
                       <q-item-section>Cumprimento do PNAE</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/escolas-beneficiadas" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item escolas-icon"
-                      :active="isActive || activePage === 'escolas'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/escolas-beneficiadas') }"
+                      @click="navigateTo('/escolas-beneficiadas')"
                     >
                       <q-item-section>Escolas Beneficiadas</q-item-section>
                     </q-item>
-                  </router-link>
-                </div>
-              </q-expansion-item>
+                  </q-list>
+                </q-menu>
+              </div>
             </div>
 
-            <!-- ODS -->
-            <div class="menu-section">
-              <q-expansion-item
-                expand-separator
-                icon="flag"
-                :label="leftDrawerOpen ? 'ODS' : ''"
-                header-class="menu-expansion-header"
-                class="menu-expansion ods-icon"
-                :default-opened="activeSection === 'ods' && leftDrawerOpen"
-                @click="toggleSection('ods')"
+            <!-- ODS (modo normal) -->
+            <div v-if="!miniState" class="menu-section">
+              <q-item
+                clickable
+                v-ripple
+                class="menu-expansion-header ods-color"
+                :class="{ 'menu-active': activeMenu === 'ods' }"
+                @click="toggleSubmenu('ods')"
               >
-                <div class="menu-items" v-if="leftDrawerOpen">
-                  <router-link to="/ods2-fome-zero" custom v-slot="{ navigate, isActive }">
+                <q-item-section avatar>
+                  <q-icon name="flag" />
+                </q-item-section>
+                <q-item-section>ODS</q-item-section>
+                <q-item-section side>
+                  <q-icon :name="activeMenu === 'ods' ? 'expand_less' : 'expand_more'" />
+                </q-item-section>
+              </q-item>
+              <div v-if="activeMenu === 'ods'" class="menu-items">
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/ods2-fome-zero') }"
+                  @click="navigateTo('/ods2-fome-zero')"
+                >
+                  <q-item-section>ODS 2 - Fome Zero</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/ods3-saude-bem-estar') }"
+                  @click="navigateTo('/ods3-saude-bem-estar')"
+                >
+                  <q-item-section>ODS 3 - Saúde e Bem-Estar</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/ods4-educacao-qualidade') }"
+                  @click="navigateTo('/ods4-educacao-qualidade')"
+                >
+                  <q-item-section>ODS 4 - Educação Qualidade</q-item-section>
+                </q-item>
+              </div>
+            </div>
+
+            <!-- ODS (modo mini hover) -->
+            <div v-else class="menu-section">
+              <div
+                class="menu-hover-container"
+                @mouseenter="openHoverMenu('ods')"
+                @mouseleave="closeHoverMenuWithDelay('ods')"
+              >
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-expansion-header ods-color"
+                  :class="{ 'menu-active': isOdsActive() }"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="flag" />
+                  </q-item-section>
+                </q-item>
+                <q-menu
+                  ref="odsMenuRef"
+                  :model-value="hoverMenuActive === 'ods'"
+                  anchor="top right"
+                  self="top left"
+                  :offset="[5, 0]"
+                  class="hover-menu"
+                  @mouseenter="cancelCloseHoverMenu"
+                  @mouseleave="closeHoverMenu('ods')"
+                >
+                  <q-list dense>
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'ods2'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/ods2-fome-zero') }"
+                      @click="navigateTo('/ods2-fome-zero')"
                     >
                       <q-item-section>ODS 2 - Fome Zero</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/ods3-saude-bem-estar" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'ods3'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/ods3-saude-bem-estar') }"
+                      @click="navigateTo('/ods3-saude-bem-estar')"
                     >
                       <q-item-section>ODS 3 - Saúde e Bem-Estar</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/ods4-educacao-qualidade" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item "
-                      :active="isActive || activePage === 'ods4'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/ods4-educacao-qualidade') }"
+                      @click="navigateTo('/ods4-educacao-qualidade')"
                     >
                       <q-item-section>ODS 4 - Educação Qualidade</q-item-section>
                     </q-item>
-                  </router-link>
-                </div>
-              </q-expansion-item>
+                  </q-list>
+                </q-menu>
+              </div>
             </div>
 
-            <!-- Portal e Integração -->
-            <div class="menu-section">
-              <q-expansion-item
-                expand-separator
-                icon="more"
-                :label="leftDrawerOpen ? 'Portal' : ''"
-                header-class="menu-expansion-header"
-                class="menu-expansion portal-icon"
-                :default-opened="activeSection === 'portal' && leftDrawerOpen"
-                @click="toggleSection('portal')"
+            <!-- Portal (modo normal) -->
+            <div v-if="!miniState" class="menu-section">
+              <q-item
+                clickable
+                v-ripple
+                class="menu-expansion-header portal-color"
+                :class="{ 'menu-active': activeMenu === 'portal' }"
+                @click="toggleSubmenu('portal')"
               >
-                <div class="menu-items" v-if="leftDrawerOpen">
-                  <router-link to="/relatorios" custom v-slot="{ navigate, isActive }">
+                <q-item-section avatar>
+                  <q-icon name="more" />
+                </q-item-section>
+                <q-item-section>Portal</q-item-section>
+                <q-item-section side>
+                  <q-icon :name="activeMenu === 'portal' ? 'expand_less' : 'expand_more'" />
+                </q-item-section>
+              </q-item>
+              <div v-if="activeMenu === 'portal'" class="menu-items">
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/relatorios') }"
+                  @click="navigateTo('/relatorios')"
+                >
+                  <q-item-section>Relatórios</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/analise-proximos-meses') }"
+                  @click="navigateTo('/analise-proximos-meses')"
+                >
+                  <q-item-section>Análise Próximos Meses</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/infraestrutura') }"
+                  @click="navigateTo('/infraestrutura')"
+                >
+                  <q-item-section>Infraestrutura</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/integracao-automatica') }"
+                  @click="navigateTo('/integracao-automatica')"
+                >
+                  <q-item-section>Integração Automática</q-item-section>
+                </q-item>
+              </div>
+            </div>
+
+            <!-- Portal (modo mini hover) -->
+            <div v-else class="menu-section">
+              <div
+                class="menu-hover-container"
+                @mouseenter="openHoverMenu('portal')"
+                @mouseleave="closeHoverMenuWithDelay('portal')"
+              >
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-expansion-header portal-color"
+                  :class="{ 'menu-active': isPortalActive() }"
+                >
+                  <q-item-section avatar>
+                    <q-icon name="more" />
+                  </q-item-section>
+                </q-item>
+                <q-menu
+                  ref="portalMenuRef"
+                  :model-value="hoverMenuActive === 'portal'"
+                  anchor="top right"
+                  self="top left"
+                  :offset="[5, 0]"
+                  class="hover-menu"
+                  @mouseenter="cancelCloseHoverMenu"
+                  @mouseleave="closeHoverMenu('portal')"
+                >
+                  <q-list dense>
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'relatorios'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/relatorios') }"
+                      @click="navigateTo('/relatorios')"
                     >
                       <q-item-section>Relatórios</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/analise-proximos-meses" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'analise'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/analise-proximos-meses') }"
+                      @click="navigateTo('/analise-proximos-meses')"
                     >
                       <q-item-section>Análise Próximos Meses</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/infraestrutura" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'infraestrutura'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/infraestrutura') }"
+                      @click="navigateTo('/infraestrutura')"
                     >
                       <q-item-section>Infraestrutura</q-item-section>
                     </q-item>
-                  </router-link>
-
-                  <router-link to="/integracao-automatica" custom v-slot="{ navigate, isActive }">
                     <q-item
                       clickable
-                      v-ripple
-                      class="menu-item"
-                      :active="isActive || activePage === 'integracao'"
-                      @click="navigate"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/integracao-automatica') }"
+                      @click="navigateTo('/integracao-automatica')"
                     >
                       <q-item-section>Integração Automática</q-item-section>
                     </q-item>
-                  </router-link>
-                </div>
-              </q-expansion-item>
+                  </q-list>
+                </q-menu>
+              </div>
             </div>
           </div>
-
         </q-scroll-area>
-
       </div>
-      <div class="info">
 
-            Versão 1.0 pre-0
-            <br>
-             {{ new Date().toLocaleString() }}
-            <br>
-            UFMT <q-icon name="copyright"></q-icon> Todos os direitos reservados.
-          </div>
+      <!-- Rodapé com tooltip no hover -->
+      <div class="info" v-if="!miniState">
+        <span class="info-text">
+          Versão 1.0 pre-0<br>
+          {{ new Date().toLocaleString() }}<br>
+          UFMT <q-icon name="copyright"></q-icon> Todos os direitos reservados.
+        </span>
+      </div>
+      <div class="info-mini" v-else>
+        <q-icon name="copyright" size="sm" />
+        <q-tooltip anchor="top middle" self="bottom middle" :offset="[0, 10]">
+          Versão 1.0 pre-0<br>
+          {{ new Date().toLocaleString() }}<br>
+          UFMT Todos os direitos reservados.
+        </q-tooltip>
+      </div>
     </q-drawer>
 
-    <!-- Conteúdo Principal -->
+    <!-- Conteúdo -->
     <q-page-container>
       <q-page>
         <div class="main-content">
           <div class="page-content">
             <div class="content-wrapper">
-              <router-view :key="activePage" />
+              <router-view :key="$route.fullPath" />
             </div>
           </div>
         </div>
@@ -419,73 +795,224 @@
 
 <script setup>
 import { ref, watch } from 'vue'
-import { useRoute } from 'vue-router' // Removido useRouter
+import { useRoute, useRouter } from 'vue-router'
 
-const route = useRoute() // Mantido apenas useRoute
+const route = useRoute()
+const router = useRouter()
 const leftDrawerOpen = ref(true)
-const activePage = ref('')
-const activeSection = ref('')
+const miniState = ref(false)
+const activeMenu = ref(null)
+const hoverMenuActive = ref(null)
+let closeTimeout = null
 
-// Mapeamento de rotas para breadcrumbs e seções
-const breadcrumbMap = {
-  dashboard: { label: 'Dashboard', section: 'dashboard', parent: null },
-  verbas: { label: 'Verbas por Município', section: 'financiamento', parent: 'Financiamento' },
-  repasses: { label: 'Repasses e Auxílios PNAE', section: 'financiamento', parent: 'Financiamento' },
-  evolucao: { label: 'Evolução (2 anos)', section: 'financiamento', parent: 'Financiamento' },
-  capacidade: { label: 'Capacidade por Município', section: 'capacidade', parent: 'Capacidade Produtiva' },
-  associacoes: { label: 'Associações/Cooperativas', section: 'capacidade', parent: 'Capacidade Produtiva' },
-  assistencia: { label: 'Assistência Técnica', section: 'capacidade', parent: 'Capacidade Produtiva' },
-  dependencia: { label: 'Dependência da Agricultura', section: 'indicadores', parent: 'Indicadores Municipais' },
-  secretaria: { label: 'Secretaria Específica', section: 'indicadores', parent: 'Indicadores Municipais' },
-  populacao: { label: 'População e Demanda', section: 'indicadores', parent: 'Indicadores Municipais' },
-  agricultores: { label: 'Agricultores Ativos (MT)', section: 'indicadores', parent: 'Indicadores Municipais' },
-  cumprimento: { label: 'Cumprimento do PNAE', section: 'pnae', parent: 'PNAE - Merenda Escolar' },
-  escolas: { label: 'Escolas Beneficiadas', section: 'pnae', parent: 'PNAE - Merenda Escolar' },
-  ods2: { label: 'ODS 2 - Fome Zero', section: 'ods', parent: 'ODS' },
-  ods3: { label: 'ODS 3 - Saúde e Bem-Estar', section: 'ods', parent: 'ODS' },
-  ods4: { label: 'ODS 4 - Educação Qualidade', section: 'ods', parent: 'ODS' },
-  relatorios: { label: 'Relatórios', section: 'portal', parent: 'Portal' },
-  analise: { label: 'Análise Próximos Meses', section: 'portal', parent: 'Portal' },
-  infraestrutura: { label: 'Infraestrutura', section: 'portal', parent: 'Portal' },
-  integracao: { label: 'Integração Automática', section: 'portal', parent: 'Portal' }
+// Função para verificar se a rota atual corresponde ao path
+const isActiveRoute = (path) => {
+  return route.path === path
 }
 
-const toggleSection = (section) => {
-  if (leftDrawerOpen.value) {
-    activeSection.value = section
+// Funções para verificar se alguma rota da categoria está ativa (modo mini)
+const isFinanciamentoActive = () => {
+  const financiamentoRoutes = ['/verbas-por-municipio', '/repasses-auxilios-pnae', '/evolucao-2-anos']
+  return financiamentoRoutes.includes(route.path)
+}
+
+const isCapacidadeActive = () => {
+  const capacidadeRoutes = ['/capacidade-por-municipio', '/associacoes-cooperativas', '/assistencia-tecnica']
+  return capacidadeRoutes.includes(route.path)
+}
+
+const isIndicadoresActive = () => {
+  const indicadoresRoutes = ['/dependencia-agricultura', '/secretaria-especifica', '/populacao-demanda', '/agricultores-ativos-mt']
+  return indicadoresRoutes.includes(route.path)
+}
+
+const isPnaeActive = () => {
+  const pnaeRoutes = ['/cumprimento-pnae', '/escolas-beneficiadas']
+  return pnaeRoutes.includes(route.path)
+}
+
+const isOdsActive = () => {
+  const odsRoutes = ['/ods2-fome-zero', '/ods3-saude-bem-estar', '/ods4-educacao-qualidade']
+  return odsRoutes.includes(route.path)
+}
+
+const isPortalActive = () => {
+  const portalRoutes = ['/relatorios', '/analise-proximos-meses', '/infraestrutura', '/integracao-automatica']
+  return portalRoutes.includes(route.path)
+}
+
+// Controle dos menus flutuantes (hover)
+const openHoverMenu = (menu) => {
+  if (closeTimeout) clearTimeout(closeTimeout)
+  hoverMenuActive.value = menu
+}
+
+const closeHoverMenuWithDelay = (menu) => {
+  closeTimeout = setTimeout(() => {
+    if (hoverMenuActive.value === menu) {
+      hoverMenuActive.value = null
+    }
+  }, 150)
+}
+
+const cancelCloseHoverMenu = () => {
+  if (closeTimeout) {
+    clearTimeout(closeTimeout)
+    closeTimeout = null
   }
 }
 
-// Sincronizar com a rota atual
-watch(() => route.name, (newRoute) => {
-  if (newRoute) {
-    activePage.value = newRoute
-    activeSection.value = breadcrumbMap[newRoute]?.section || newRoute
+const closeHoverMenu = (menu) => {
+  if (hoverMenuActive.value === menu) {
+    hoverMenuActive.value = null
+  }
+}
+
+const toggleDrawer = () => {
+  miniState.value = !miniState.value
+  if (!miniState.value) {
+    leftDrawerOpen.value = true
+  }
+}
+
+const handleDrawerChange = (val) => {
+  if (!val && miniState.value) {
+    miniState.value = false
+  }
+}
+
+const toggleSubmenu = (menu) => {
+  if (activeMenu.value === menu) {
+    activeMenu.value = null
+  } else {
+    activeMenu.value = menu
+  }
+}
+
+const navigateTo = (path) => {
+  router.push(path)
+}
+
+// Manter o menu expandido se a rota atual pertencer à categoria
+watch(() => route.path, (newPath) => {
+  // Verificar e expandir o menu correspondente
+  if (['/dashboard', '/relatorio'].includes(newPath)) {
+    activeMenu.value = 'dashboard'
+  } else if (['/verbas-por-municipio', '/repasses-auxilios-pnae', '/evolucao-2-anos'].includes(newPath)) {
+    activeMenu.value = 'financiamento'
+  } else if (['/capacidade-por-municipio', '/associacoes-cooperativas', '/assistencia-tecnica'].includes(newPath)) {
+    activeMenu.value = 'capacidade'
+  } else if (['/dependencia-agricultura', '/secretaria-especifica', '/populacao-demanda', '/agricultores-ativos-mt'].includes(newPath)) {
+    activeMenu.value = 'indicadores'
+  } else if (['/cumprimento-pnae', '/escolas-beneficiadas'].includes(newPath)) {
+    activeMenu.value = 'pnae'
+  } else if (['/ods2-fome-zero', '/ods3-saude-bem-estar', '/ods4-educacao-qualidade'].includes(newPath)) {
+    activeMenu.value = 'ods'
+  } else if (['/relatorios', '/analise-proximos-meses', '/infraestrutura', '/integracao-automatica'].includes(newPath)) {
+    activeMenu.value = 'portal'
   }
 }, { immediate: true })
 </script>
 
 <style scoped>
-/* Sidebar Styles */
+/* Cores dos ícones */
+.dashboard-color :deep(.q-icon) { color: #1976d2 !important; }
+.financiamento-color :deep(.q-icon) { color: #2e7d32 !important; }
+.capacidade-color :deep(.q-icon) { color: #f57c00 !important; }
+.indicadores-color :deep(.q-icon) { color: #7b1fa2 !important; }
+.pnae-color :deep(.q-icon) { color: #c62828 !important; }
+.ods-color :deep(.q-icon) { color: #00838f !important; }
+.portal-color :deep(.q-icon) { color: #455a64 !important; }
+
+/* Sidebar */
 .sidebar-nameless {
   border-right: 1px solid rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
 }
-
-/* Quando o drawer está no modo mini, centraliza os ícones */
+.sidebar-nameless:deep(.q-drawer--mini) {
+  width: 100px !important;
+}
 .sidebar-nameless:deep(.q-drawer--mini) .q-item {
   justify-content: center;
-  padding: 12px;
+  padding: 12px !important;
 }
-
-.sidebar-nameless:deep(.q-drawer--mini) .q-expansion-item__container > .q-item {
-  justify-content: center;
-  padding: 12px;
+.sidebar-nameless:deep(.q-drawer--mini) .q-item__section--avatar {
+  min-width: auto;
+  margin-right: 0;
 }
-
-/* Esconde o texto dos itens quando mini */
 .sidebar-nameless:deep(.q-drawer--mini) .q-item__label {
   display: none;
+}
+
+/* Logo no modo normal */
+.sidebar-logo {
+  padding: 24px 20px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+/* Logo no modo mini - reduz tamanho */
+.sidebar-logo-mini {
+  padding: 16px 10px;
+}
+.logo-area {
+  background-image: url("https://i.imgur.com/MzEVU64.png");
+  background-size: cover;
+  background-position: center;
+  height: 40px;
+  width: 100px;
+  border-right: 1px solid rgb(235, 235, 235);
+}
+
+/* Logo modo mini - com a nova imagem */
+.logo-area-mini {
+  background-image: url("https://i.imgur.com/7XoXkGb.png") !important;
+  width: 80px !important;
+  height: 50px !important;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  border-right: none !important;
+}
+
+/* Menu flutuante (hover) */
+.hover-menu {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  padding: 4px 0;
+  min-width: 200px;
+  z-index: 2000;
+}
+.hover-menu .q-item {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+}
+.hover-menu .q-item:hover {
+  background-color: #f5f5f5;
+}
+
+/* Estilo para item ativo no menu hover */
+.hover-menu-item-active {
+  background-color: #e8e8e8 !important;
+  color: #000000 !important;
+  font-weight: 500;
+}
+
+.menu-hover-container {
+  display: inline-block;
+  width: 100%;
+}
+
+/* Rodapé */
+.info-mini {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  text-align: center;
+  padding: 1em;
+  color: gray;
+  border-top: 1px solid rgba(0, 0, 0, 0.06);
+  cursor: pointer;
 }
 
 .sidebar-content {
@@ -494,14 +1021,8 @@ watch(() => route.name, (newRoute) => {
   flex-direction: column;
   position: relative;
 }
-
-/* Logo Area */
-.sidebar-logo {
-  padding: 24px 20px;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
-}
 .info {
-  padding:1.5em;
+  padding: 1.5em;
   color: gray;
   font-size: 0.8em;
   text-align: left;
@@ -513,7 +1034,6 @@ watch(() => route.name, (newRoute) => {
   background-color: #fff;
   position: absolute;
   bottom: 0;
-
 }
 .logo-container {
   display: flex;
@@ -521,19 +1041,6 @@ watch(() => route.name, (newRoute) => {
   gap: 12px;
   flex-wrap: wrap;
 }
-
-.logo-area {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-  background-image: url("https://i.imgur.com/MzEVU64.png");
-  height: 40px;
-  width: 100px;
-  border-right: 1px solid rgb(235, 235, 235);
-  background-size: cover;
-  background-position: center;
-}
-
 .logo-text {
   font-size: 15px;
   font-weight: normal;
@@ -544,31 +1051,26 @@ watch(() => route.name, (newRoute) => {
   cursor: pointer;
   line-height: 1.3;
   max-width: 110px;
-  transition: opacity 0.3s ease;
 }
 
-/* Quando o drawer está mini, esconde o texto da logo */
+/* Quando o drawer está mini, o texto fica invisível */
 .sidebar-nameless:deep(.q-drawer--mini) .logo-text {
-  display: none;
+  display: none !important;
 }
 
-/* Container do ícone de toggle */
 .toggle-icon-container {
   position: absolute;
   right: -12px;
-  top: 110px;
+  top: 30px;
   z-index: 10;
   background: white;
   border-radius: 50%;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  cursor: pointer;
 }
-* {
-  font-family: 'Ubuntu', sans-serif;
-}
-/* Ícone de fechar/abrir */
 .close-nav-icon {
   font-size: 20px;
-  color: #999;
+  color: #666;
   cursor: pointer;
   transition: all 0.2s ease;
   background: white;
@@ -576,61 +1078,37 @@ watch(() => route.name, (newRoute) => {
   padding: 6px;
   display: block;
 }
-
 .close-nav-icon:hover {
   color: #000000;
   background-color: #f0f0f0;
   transform: scale(1.1);
 }
-
-/* Menu Sections */
 .sidebar-menu {
   flex: 1;
   padding: 0.8em;
 }
-
 .menu-section {
   margin-bottom: 4px;
 }
-
-/* Estilização dos expansion items */
-.menu-expansion {
+.menu-expansion-header {
   margin: 0 8px;
+  border-radius: 10px;
+  color: #494949;
+  transition: all 0.2s ease;
 }
-
 .menu-expansion-header:hover {
   background-color: #f7f7f7;
 }
-
-.menu-expansion :deep(.q-expansion-item__container) {
-  border-radius: 10px;
+/* Estilo para o header do menu ativo (expandido) */
+.menu-active {
+  background-color: #f0f0f0 !important;
 }
-
-.menu-expansion :deep(.q-item) {
-  padding: 1em 1em 1em 1em;
-  border-radius: 10px;
-  color: #494949;
-  font-family: 'Ubuntu', sans-serif;
-}
-
-/* Quando está no modo mini, centraliza os ícones e remove o padding */
-.sidebar-nameless:deep(.q-drawer--mini) .q-expansion-item .q-item {
-  justify-content: center;
-  padding: 12px;
-}
-
-/* Remove o espaço do label quando mini */
-.sidebar-nameless:deep(.q-drawer--mini) .q-expansion-item .q-item__section--side {
-  margin-right: 0;
-}
-
 .menu-items {
   display: flex;
   flex-direction: column;
   gap: 2px;
   padding: 4px 0 4px 16px;
 }
-
 .menu-item {
   margin: 0;
   border-radius: 8px;
@@ -638,139 +1116,47 @@ watch(() => route.name, (newRoute) => {
   cursor: pointer;
   min-height: 40px;
   color: #4a5568;
+  padding-left: 48px !important;
 }
-
 .menu-item:hover {
   background-color: #f5f5f5;
 }
-
-.menu-item[active="true"] {
+/* Estilo para item de menu ativo (página selecionada) */
+.menu-item-active {
   background-color: #e8e8e8 !important;
   color: #000000 !important;
   font-weight: 500;
 }
-
-.menu-item.q-item--active {
-  background-color: #e8e8e8 !important;
-  color: #000000 !important;
-}
-
-.dashboard-icon :deep(.q-item__section--avatar .q-icon) {
-  color: #1976d2; /* azul */
-}
-
-.financiamento-icon :deep(.q-item__section--avatar .q-icon) {
-  color: #2e7d32; /* verde */
-}
-
-.capacidade-icon :deep(.q-item__section--avatar .q-icon) {
-  color: #f57c00; /* laranja */
-}
-
-.indicadores-icon :deep(.q-item__section--avatar .q-icon) {
-  color: #7b1fa2; /* roxo */
-}
-
-.pnae-icon :deep(.q-item__section--avatar .q-icon) {
-  color: #c62828; /* vermelho */
-}
-
-.ods-icon :deep(.q-item__section--avatar .q-icon) {
-  color: #00838f; /* teal */
-}
-
-.portal-icon :deep(.q-item__section--avatar .q-icon) {
-  color: #455a64; /* cinza escuro */
-}
-
-.menu-item .q-icon {
-  color: inherit;
-}
-
-.menu-item:hover .q-icon {
-  color: inherit;
-}
-
-.menu-item[active="true"] .q-icon {
-  color: inherit;
-}
-
-.menu-item :deep(.q-item__section--avatar) {
-  min-width: 36px;
-}
-
-.menu-item :deep(.q-icon) {
-  transition: color 0.2s ease;
-}
-
-/* Main Content */
 .main-content {
   background: #f8f9fa;
   min-height: 100vh;
-  transition: margin-left 0.3s ease;
 }
-
 .page-content {
   padding: 24px;
   min-height: calc(100vh - 60px);
 }
-
 .content-wrapper {
   max-width: 100%;
   margin: 0 auto;
-  transition: all 0.3s ease;
   width: 100%;
 }
-
-/* Responsive Design */
 @media (max-width: 768px) {
-  .sidebar-nameless {
-    width: 260px !important;
-  }
-
-  .page-content {
-    padding: 16px;
-  }
-
-  .logo-text {
-    font-size: 11px;
-    max-width: 140px;
-  }
-
-  .logo-container {
-    gap: 8px;
-  }
+  .sidebar-nameless { width: 260px !important; }
+  .page-content { padding: 16px; }
+  .logo-text { font-size: 11px; max-width: 140px; }
+  .logo-container { gap: 8px; }
 }
-
-@media (min-width: 769px) {
-  .mobile-only {
-    display: none !important;
-  }
-}
-
 @media (min-width: 1024px) {
-  .content-wrapper {
-    max-width: 100%;
-  }
+  .content-wrapper { max-width: 100%; }
 }
-
 @media (min-width: 1400px) {
-  .content-wrapper {
-    max-width: 1400px;
-  }
+  .content-wrapper { max-width: 1400px; }
 }
-
-/* Scrollbar Styling */
 .sidebar-menu :deep(.q-scrollarea__content) {
   scrollbar-width: thin;
 }
-
 .sidebar-menu :deep(.q-scrollarea__content::-webkit-scrollbar-thumb) {
   background: #cbd5e0;
   border-radius: 4px;
-}
-
-.menu-item :deep(.q-ripple) {
-  color: #d0d0d0;
 }
 </style>
