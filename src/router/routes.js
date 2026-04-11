@@ -1,35 +1,38 @@
 const routes = [
   {
-    path: '/',
-    component: () => import('pages/HomePage.vue'),
-    children: [{ path: '', component: () => import('pages/HomePage.vue') }],
-  },
-   {
-    path: '/dashboard',
-    component: () => import('pages/DashboardPage.vue'),
-    children: [{ path: '', component: () => import('pages/HomePage.vue') }],
-  },
-  {
     path: '/login',
-    component: () => import('pages/LoginPage.vue'),
-    children: [{ path: '', component: () => import('pages/HomePage.vue') }],
+    component: () => import('layouts/AuthLayout.vue'),
+    children: [
+      {
+        path: '',  // Isso vai renderizar LoginPage quando acessar /login
+        component: () => import('pages/LoginPage.vue')
+      },
+    ],
   },
 
   {
-    path: '/ciencias-ambientais',
-    component: () => import('pages/Mapa.vue'),
-    children: [{ path: '', component: () => import('pages/DashboardPage.vue') }],
-  },
-
-
-
-
-  // Always leave this as last one,
-  // but you can also remove it
-  {
+    // TUDO AQUI  ABAIXO TEM O NAVBAR JUNTO
+    path: '/',
+    component: () => import('layouts/MainLayout.vue'), // Crie este componente
+    children: [
+      {
+        path: '',
+        component: () => import('pages/HomePage.vue')
+      },
+      {
+        path: 'dashboard',
+        component: () => import('pages/DashboardPage.vue')
+      },
+      {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorPage.vue'),
+  }
+
+    ]
   },
+
+  // TUDO AQUI ABAIXO ESTÁ FORA DO NAVBAR
+
 ]
 
 export default routes

@@ -1,5 +1,5 @@
 <template>
-  <q-page class="flex flex-center column text-center">
+  <div class="flex flex-center column text-center q-pa-md q-gutter-y-md q-mt-xl q-mb-xl q-mx-auto w-100 ">
 
     <!-- Ícone grande triste -->
     <q-icon
@@ -29,7 +29,7 @@
       rounded
     />
 
-  </q-page>
+  </div>
 </template>
 
 <script setup>
