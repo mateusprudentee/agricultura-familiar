@@ -5,10 +5,10 @@
       <!-- Header -->
       <div class="row items-center justify-between q-mb-lg">
         <div>
-          <div class="text-h5 text-weight-bold text-primary">
-            <q-icon name="cloud_upload" size="32px" class="q-mr-sm" />
-            Carregar e Processar Dados
-          </div>
+            <q-toolbar-title class="text-weight-medium">
+          <q-icon name="analytics" color="primary" size="sm" class="q-mr-sm" />
+          Processamento de Dados
+        </q-toolbar-title>
           <div class="text-caption text-grey-6 q-mt-xs">
             Upload de arquivos, detecção automática inteligente e exportação em múltiplos formatos
           </div>
@@ -31,49 +31,73 @@
             Área de Upload
           </div>
 
-          <q-uploader
+          <!-- Uploader local - SEM API -->
+          <q-file
             ref="uploaderRef"
-            v-model="arquivosUpload"
-            url="#"
-            :multiple="true"
+            v-model="arquivosSelecionados"
+            label="Selecione os arquivos"
+            outlined
+            multiple
             :max-files="50"
             :max-total-size="209715200"
-            accept=".csv,.json,.xml,.xlsx,.xls,.txt,.pdf,.sql,.tsv,.parquet"
-            @added="onFilesAdded"
-            @removed="onFileRemoved"
-            @uploaded="onFilesUploaded"
-            @failed="onUploadFailed"
+            accept=".csv,.json,.xml,.xlsx,.xls,.txt,.pdf,.sql,.tsv"
+            @update:model-value="onFilesSelected"
             class="uploader-full-width"
             color="primary"
-            hide-upload-btn
-            auto-upload
-            style="min-height: 220px; width: 100%;"
+            counter
+            use-chips
+            style="min-height: 120px;"
           >
-            <template v-slot:header>
-              <div class="full-width text-center q-pa-lg">
-                <q-icon name="cloud_upload" size="64px" color="primary" class="q-mb-sm" />
-                <div class="text-h6 text-weight-medium">Arraste arquivos ou clique para selecionar</div>
-                <div class="text-caption text-grey-6 q-mt-sm">
-                  Formatos suportados: CSV, JSON, XML, Excel, TXT, PDF, SQL, TSV, Parquet
-                </div>
-                <div class="text-caption text-grey-6">
-                  Tamanho máximo: 200MB • Até 50 arquivos por vez
-                </div>
-                <q-badge color="primary" class="q-mt-md q-pa-sm" style="font-size: 0.9rem;">
-                  <q-icon name="auto_awesome" size="16px" class="q-mr-xs" />
-                  Detecção automática de formato e estrutura
-                </q-badge>
-              </div>
+            <template v-slot:prepend>
+              <q-icon name="cloud_upload" />
             </template>
-          </q-uploader>
+            <template v-slot:after>
+              <q-btn
+                round
+                dense
+                flat
+                icon="send"
+                @click.stop="processarArquivosSelecionados"
+                :disable="arquivosSelecionados.length === 0"
+                :loading="processando"
+              >
+                <q-tooltip>Processar arquivos selecionados</q-tooltip>
+              </q-btn>
+            </template>
+            <template v-slot:hint>
+              Formatos: CSV, JSON, XML, Excel, TXT, PDF, SQL, TSV • Máx: 200MB
+            </template>
+          </q-file>
+
+          <!-- Área de Drop visual -->
+          <div
+            class="drop-zone q-mt-md"
+            @drop.prevent="onDropFiles"
+            @dragover.prevent="dragOver = true"
+            @dragleave.prevent="dragOver = false"
+            :class="{ 'drag-over': dragOver }"
+            @click="triggerFileSelect"
+          >
+            <div class="text-center q-pa-xl">
+              <q-icon name="cloud_upload" size="64px" color="primary" class="q-mb-sm" />
+              <div class="text-h6 text-weight-medium">Arraste arquivos aqui</div>
+              <div class="text-caption text-grey-6 q-mt-sm">
+                ou clique para selecionar
+              </div>
+              <q-badge color="primary" class="q-mt-md q-pa-sm" style="font-size: 0.9rem;">
+                <q-icon name="auto_awesome" size="16px" class="q-mr-xs" />
+                Detecção automática de formato e estrutura
+              </q-badge>
+            </div>
+          </div>
 
           <!-- Status dos Arquivos -->
-          <div v-if="arquivosUpload.length > 0" class="q-mt-md">
+          <div v-if="arquivosSelecionados.length > 0" class="q-mt-md">
             <div class="text-caption text-weight-medium q-mb-sm">
-              Arquivos Selecionados ({{ arquivosUpload.length }})
+              Arquivos Selecionados ({{ arquivosSelecionados.length }})
             </div>
             <q-list dense bordered class="rounded-borders">
-              <q-item v-for="(arquivo, index) in arquivosUpload" :key="index">
+              <q-item v-for="(arquivo, index) in arquivosSelecionados" :key="index">
                 <q-item-section avatar>
                   <q-icon :name="getIconeArquivo(arquivo.name)" :color="getCorArquivo(arquivo.name)" size="20px" />
                 </q-item-section>
@@ -82,8 +106,8 @@
                   <q-item-label caption>{{ formatarBytes(arquivo.size) }}</q-item-label>
                 </q-item-section>
                 <q-item-section side>
-                  <q-badge :color="getStatusArquivo(arquivo).cor" text-color="white" size="sm">
-                    {{ getStatusArquivo(arquivo).texto }}
+                  <q-badge color="positive" text-color="white" size="sm">
+                    Pronto
                   </q-badge>
                 </q-item-section>
               </q-item>
@@ -93,7 +117,7 @@
       </q-card>
 
       <!-- Detecção Automática Inteligente -->
-      <q-card v-if="arquivosUpload.length > 0" class="deteccao-card q-mb-lg">
+      <q-card v-if="arquivosSelecionados.length > 0" class="deteccao-card q-mb-lg">
         <q-card-section>
           <div class="row items-center justify-between q-mb-md">
             <div class="text-subtitle1 text-weight-medium">
@@ -213,9 +237,6 @@
                 <template v-slot:prepend>
                   <q-icon name="memory" />
                 </template>
-                <template v-slot:hint>
-                  <span class="text-caption">Selecionado automaticamente baseado nos dados</span>
-                </template>
               </q-select>
             </div>
             <div class="col-12 col-md-4">
@@ -322,7 +343,7 @@
               label="Processar Arquivos"
               @click="processarArquivos"
               :loading="processando"
-              :disable="arquivosUpload.length === 0"
+              :disable="arquivosSelecionados.length === 0"
               size="lg"
               class="q-mr-sm"
             />
@@ -575,7 +596,7 @@
 </template>
 
 <script>
-import { ref, computed, onMounted, watch } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { useQuasar } from 'quasar'
 import { Chart, registerables } from 'chart.js'
 Chart.register(...registerables)
@@ -588,13 +609,14 @@ export default {
 
     // Estado
     const uploaderRef = ref(null)
-    const arquivosUpload = ref([])
+    const arquivosSelecionados = ref([])
     const processando = ref(false)
     const exportando = ref(false)
     const expanded = ref(false)
     const mostrarDetalhes = ref(false)
     const dialogoVisualizador = ref(false)
     const filtroTabela = ref('')
+    const dragOver = ref(false)
 
     const tipoDadosDetectado = ref('Agricultura Familiar/PNAE')
     const encodingDetectado = ref('UTF-8')
@@ -714,50 +736,48 @@ export default {
     })
 
     // Métodos
-    const onFilesAdded = (files) => {
-      // Analisar arquivos para detecção automática
-      analisarArquivosAutomaticamente(files)
-
-      $q.notify({
-        type: 'info',
-        message: `${files.length} arquivo(s) adicionado(s)`,
-        caption: 'Análise automática iniciada',
-        position: 'top-right',
-        timeout: 2000
-      })
+    const triggerFileSelect = () => {
+      if (uploaderRef.value) {
+        uploaderRef.value.pickFiles()
+      }
     }
 
-    const onFileRemoved = (files) => {
-      $q.notify({
-        type: 'info',
-        message: 'Arquivo removido',
-        position: 'top-right',
-        timeout: 1000
-      })
-    }
+    const onDropFiles = (event) => {
+      dragOver.value = false
+      const files = event.dataTransfer.files
+      if (files.length > 0) {
+        const fileArray = Array.from(files)
+        arquivosSelecionados.value = [...arquivosSelecionados.value, ...fileArray]
+        analisarArquivosAutomaticamente(fileArray)
 
-    const onFilesUploaded = (info) => {
-      const files = info.files
-      files.forEach(file => {
-        arquivosProcessados.value.push({
-          nome: file.name,
-          tipo: getTipoArquivo(file.name),
-          tamanho: file.size,
-          data: new Date()
+        $q.notify({
+          type: 'info',
+          message: `${files.length} arquivo(s) adicionado(s)`,
+          position: 'top-right',
+          timeout: 2000
         })
-      })
+      }
     }
 
-    const onUploadFailed = (info) => {
-      $q.notify({
-        type: 'negative',
-        message: 'Falha no upload',
-        position: 'top-right'
-      })
+    const onFilesSelected = (files) => {
+      if (files && files.length > 0) {
+        analisarArquivosAutomaticamente(files)
+
+        $q.notify({
+          type: 'info',
+          message: `${files.length} arquivo(s) selecionado(s)`,
+          caption: 'Análise automática iniciada',
+          position: 'top-right',
+          timeout: 2000
+        })
+      }
+    }
+
+    const processarArquivosSelecionados = () => {
+      processarArquivos()
     }
 
     const analisarArquivosAutomaticamente = (files) => {
-      // Detectar tipo de dados
       const nomes = files.map(f => f.name.toLowerCase()).join(' ')
 
       if (nomes.includes('pnae') || nomes.includes('merenda')) {
@@ -769,15 +789,11 @@ export default {
       } else if (nomes.includes('cooperativa') || nomes.includes('associacao')) {
         tipoDadosDetectado.value = 'Cooperativas/Associações'
         algoritmoSelecionado.value = 'clustering'
-      } else if (nomes.includes('escola') || nomes.includes('aluno')) {
-        tipoDadosDetectado.value = 'Dados Educacionais'
-        algoritmoSelecionado.value = 'classificacao'
       } else {
         tipoDadosDetectado.value = 'Dados Genéricos'
         algoritmoSelecionado.value = 'analise_estatistica'
       }
 
-      // Detectar campos
       camposDetectados.value = [
         { nome: 'municipio', tipo: 'string', qualidade: 95 },
         { nome: 'populacao', tipo: 'number', qualidade: 90 },
@@ -786,7 +802,6 @@ export default {
         { nome: 'status', tipo: 'categorical', qualidade: 92 }
       ]
 
-      // Ajustar opções baseado na detecção
       if (files.some(f => f.name.endsWith('.csv'))) {
         opcoes.value.delimitador = ','
         delimitadorDetectado.value = ','
@@ -796,7 +811,6 @@ export default {
     }
 
     const otimizarAutomaticamente = () => {
-      // Otimizar configurações baseado nos dados
       opcoes.value.removerDuplicatas = true
       opcoes.value.validarDados = true
       opcoes.value.normalizarTexto = true
@@ -804,14 +818,13 @@ export default {
       nivelProcessamento.value = 'padrao'
       modoProcessamento.value = 'auto'
 
-      // Atualizar sugestões
       sugestoesTratamento.value.forEach(s => {
         s.aplicada = s.nome !== 'Preencher nulos' && s.nome !== 'Corrigir encoding'
       })
 
       $q.notify({
         type: 'positive',
-        message: 'Configurações otimizadas automaticamente!',
+        message: 'Configurações otimizadas!',
         position: 'top-right',
         timeout: 2000
       })
@@ -820,7 +833,6 @@ export default {
     const toggleSugestao = (index) => {
       sugestoesTratamento.value[index].aplicada = !sugestoesTratamento.value[index].aplicada
 
-      // Aplicar à opção correspondente
       const sugestao = sugestoesTratamento.value[index]
       switch (sugestao.nome) {
         case 'Remover duplicatas':
@@ -842,7 +854,7 @@ export default {
     }
 
     const processarArquivos = async () => {
-      if (arquivosUpload.value.length === 0) {
+      if (arquivosSelecionados.value.length === 0) {
         $q.notify({
           type: 'warning',
           message: 'Nenhum arquivo para processar',
@@ -855,33 +867,26 @@ export default {
       const inicio = performance.now()
 
       try {
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        await new Promise(resolve => setTimeout(resolve, 1500))
 
         resultados.value = []
-        let totalRegistrosCount = 0
         let tamanhoTotalCount = 0
 
-        for (const arquivo of arquivosUpload.value) {
-          const tipo = getTipoArquivo(arquivo.name)
-          const registros = Math.floor(Math.random() * 5000) + 100
-          const colunas = Math.floor(Math.random() * 15) + 5
-          const tempo = Math.floor(Math.random() * 500) + 50
+        for (const arquivo of arquivosSelecionados.value) {
+          const registros = Math.floor(Math.random() * 3000) + 200
+          const colunas = Math.floor(Math.random() * 12) + 5
 
-          totalRegistrosCount += registros
           tamanhoTotalCount += arquivo.size || 0
 
           resultados.value.push({
             nome: arquivo.name,
-            tipo: tipo,
             registros: registros,
             colunas: colunas,
-            status: Math.random() > 0.1 ? 'sucesso' : 'aviso',
-            tempo: tempo,
-            dados: gerarDadosExemplo(tipo, registros, colunas)
+            status: 'sucesso',
+            dados: gerarDadosExemplo(registros)
           })
         }
 
-        // Consolidar dados
         dadosProcessados.value = []
         resultados.value.forEach(resultado => {
           if (resultado.dados) {
@@ -894,8 +899,13 @@ export default {
           ...row
         }))
 
+        arquivosProcessados.value = arquivosSelecionados.value.map(f => ({
+          nome: f.name,
+          tamanho: f.size
+        }))
+
         estatisticas.value = {
-          totalArquivos: arquivosUpload.value.length,
+          totalArquivos: arquivosSelecionados.value.length,
           tamanhoTotal: tamanhoTotalCount,
           totalRegistros: dadosProcessados.value.length,
           tempoProcessamento: ((performance.now() - inicio) / 1000).toFixed(2)
@@ -914,7 +924,8 @@ export default {
           timeout: 5000
         })
 
-      } catch (error) {
+      } catch (err) {
+        console.error('Erro:', err)
         $q.notify({
           type: 'negative',
           message: 'Erro no processamento',
@@ -937,12 +948,12 @@ export default {
             { nome: 'Variância', valor: '249.6', cor: 'text-purple' }
           )
           break
-        case 'deteccao_anomalias':
+        case 'tendencias':
           metricas.push(
-            { nome: 'Anomalias', valor: '23', cor: 'text-negative' },
-            { nome: 'Outliers', valor: '47', cor: 'text-warning' },
-            { nome: 'Threshold', valor: '2.5σ', cor: 'text-primary' },
-            { nome: 'Confiança', valor: '95%', cor: 'text-green' }
+            { nome: 'Tendência', valor: '+12.5%', cor: 'text-positive' },
+            { nome: 'Sazonalidade', valor: 'Trimestral', cor: 'text-primary' },
+            { nome: 'Previsão', valor: '156.8', cor: 'text-green' },
+            { nome: 'MAPE', valor: '8.3%', cor: 'text-orange' }
           )
           break
         case 'clustering':
@@ -953,46 +964,13 @@ export default {
             { nome: 'Iterações', valor: '42', cor: 'text-purple' }
           )
           break
-        case 'regressao':
-          metricas.push(
-            { nome: 'R²', valor: '0.89', cor: 'text-primary' },
-            { nome: 'MSE', valor: '12.4', cor: 'text-green' },
-            { nome: 'Coeficiente', valor: '2.34', cor: 'text-orange' },
-            { nome: 'P-value', valor: '<0.001', cor: 'text-purple' }
-          )
-          break
-        case 'tendencias':
-          metricas.push(
-            { nome: 'Tendência', valor: '+12.5%', cor: 'text-positive' },
-            { nome: 'Sazonalidade', valor: 'Trimestral', cor: 'text-primary' },
-            { nome: 'Previsão', valor: '156.8', cor: 'text-green' },
-            { nome: 'MAPE', valor: '8.3%', cor: 'text-orange' }
-          )
-          break
-        case 'correlacao':
-          metricas.push(
-            { nome: 'Pearson', valor: '0.76', cor: 'text-primary' },
-            { nome: 'Spearman', valor: '0.72', cor: 'text-green' },
-            { nome: 'Kendall', valor: '0.68', cor: 'text-orange' },
-            { nome: 'Pares', valor: '15', cor: 'text-purple' }
-          )
-          break
-        case 'classificacao':
+        default:
           metricas.push(
             { nome: 'Acurácia', valor: '92.4%', cor: 'text-positive' },
             { nome: 'Precisão', valor: '0.91', cor: 'text-primary' },
             { nome: 'Recall', valor: '0.88', cor: 'text-green' },
             { nome: 'F1-Score', valor: '0.89', cor: 'text-orange' }
           )
-          break
-        case 'sumarizacao':
-          metricas.push(
-            { nome: 'Resumo', valor: '845 tokens', cor: 'text-primary' },
-            { nome: 'Compressão', valor: '78%', cor: 'text-green' },
-            { nome: 'Entidades', valor: '156', cor: 'text-orange' },
-            { nome: 'Sentimento', valor: 'Positivo', cor: 'text-positive' }
-          )
-          break
       }
 
       metricasAlgoritmo.value = metricas
@@ -1030,7 +1008,7 @@ export default {
       }
     }
 
-    const exportarDados = async () => {
+    const exportarDados = () => {
       if (dadosProcessados.value.length === 0) {
         $q.notify({
           type: 'warning',
@@ -1042,15 +1020,14 @@ export default {
 
       exportando.value = true
 
-      try {
+      setTimeout(() => {
         let conteudo = ''
-        let tipoMime = ''
+        let tipoMime = 'text/plain'
         let extensao = formatoExportacao.value
 
         switch (formatoExportacao.value) {
           case 'vue':
             conteudo = gerarVueComponent()
-            tipoMime = 'text/plain'
             break
           case 'xml':
             conteudo = gerarXML()
@@ -1068,10 +1045,8 @@ export default {
             conteudo = gerarCSV()
             tipoMime = 'text/csv'
             break
-          case 'xlsx':
-            conteudo = 'Conteúdo Excel'
-            tipoMime = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
-            break
+          default:
+            conteudo = 'Dados exportados em Excel'
         }
 
         const blob = new Blob([conteudo], { type: tipoMime })
@@ -1079,38 +1054,42 @@ export default {
         const a = document.createElement('a')
         a.href = url
         a.download = `${nomeArquivoExport.value}.${extensao}`
-
-        if (compressor.value !== 'nenhum') {
-          a.download += `.${compressor.value}`
-        }
-
         document.body.appendChild(a)
         a.click()
         document.body.removeChild(a)
         URL.revokeObjectURL(url)
 
+        exportando.value = false
+
         $q.notify({
           type: 'positive',
-          message: 'Exportação concluída!',
+          message: 'Download iniciado!',
           caption: `Arquivo: ${a.download}`,
           position: 'top-right',
           timeout: 5000
         })
-
-      } catch (error) {
-        $q.notify({
-          type: 'negative',
-          message: 'Erro na exportação',
-          position: 'top-right'
-        })
-      } finally {
-        exportando.value = false
-      }
+      }, 500)
     }
 
     const gerarVueComponent = () => {
-      const nome = nomeArquivoExport.value.split('_').map(p => p.charAt(0).toUpperCase() + p.slice(1)).join('')
-      return `<template>\n  <q-page class="q-pa-md">\n    <q-table :rows="dados" :columns="colunas" row-key="id" dense bordered />\n  </q-page>\n</template>\n\n<script>\nexport default {\n  setup() {\n    const dados = ${JSON.stringify(dadosProcessados.value.slice(0, 10), null, 2)}\n    const colunas = ${JSON.stringify(colunasTabela.value, null, 2)}\n    return { dados, colunas }\n  }\n}\n<\/script>`
+      const dadosJson = JSON.stringify(dadosProcessados.value.slice(0, 10), null, 2)
+      const colunasJson = JSON.stringify(colunasTabela.value, null, 2)
+
+      return `<template>
+  <q-page class="q-pa-md">
+    <q-table :rows="dados" :columns="colunas" row-key="id" dense bordered />
+  </q-page>
+</template>
+
+<script>
+export default {
+  setup() {
+    const dados = ${dadosJson}
+    const colunas = ${colunasJson}
+    return { dados, colunas }
+  }
+}
+</scr` + `ipt>`
     }
 
     const gerarXML = () => {
@@ -1119,8 +1098,7 @@ export default {
         xml += '  <registro>\n'
         Object.keys(item).forEach(key => {
           if (key !== 'id') {
-            const valor = String(item[key]).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            xml += `    <${key}>${valor}</${key}>\n`
+            xml += `    <${key}>${item[key]}</${key}>\n`
           }
         })
         xml += '  </registro>\n'
@@ -1130,9 +1108,8 @@ export default {
     }
 
     const gerarSQL = () => {
-      let sql = `-- Script SQL gerado em ${new Date().toISOString()}\n`
-      sql += `-- Total: ${dadosProcessados.value.length} registros\n\n`
-      sql += `CREATE TABLE IF NOT EXISTS ${nomeArquivoExport.value} (\n  id INT PRIMARY KEY AUTO_INCREMENT,\n`
+      let sql = `-- Script SQL - ${new Date().toISOString()}\n\n`
+      sql += `CREATE TABLE ${nomeArquivoExport.value} (\n  id INT PRIMARY KEY,\n`
 
       const primeiraLinha = dadosProcessados.value[0] || {}
       Object.keys(primeiraLinha).forEach(key => {
@@ -1142,56 +1119,53 @@ export default {
       })
       sql = sql.slice(0, -2) + '\n);\n\n'
 
-      sql += `INSERT INTO ${nomeArquivoExport.value} (${Object.keys(primeiraLinha).filter(k => k !== 'id').join(', ')}) VALUES\n`
-      dadosProcessados.value.slice(0, 1000).forEach((item, index) => {
+      dadosProcessados.value.slice(0, 100).forEach(item => {
+        const colunas = Object.keys(item).filter(k => k !== 'id').join(', ')
         const valores = Object.keys(item).filter(k => k !== 'id').map(k => `'${String(item[k]).replace(/'/g, "''")}'`).join(', ')
-        sql += `  (${valores})${index < Math.min(dadosProcessados.value.length, 1000) - 1 ? ',' : ';'}\n`
+        sql += `INSERT INTO ${nomeArquivoExport.value} (${colunas}) VALUES (${valores});\n`
       })
       return sql
     }
 
     const gerarCSV = () => {
       if (dadosProcessados.value.length === 0) return ''
-      const delimitador = opcoes.value.delimitador
       const colunas = Object.keys(dadosProcessados.value[0]).filter(k => k !== 'id')
-      let csv = colunas.join(delimitador) + '\n'
+      let csv = colunas.join(',') + '\n'
       dadosProcessados.value.forEach(item => {
-        const linha = colunas.map(c => String(item[c] || '')).join(delimitador)
-        csv += linha + '\n'
+        csv += colunas.map(c => item[c]).join(',') + '\n'
       })
       return csv
     }
 
-    const gerarLogsProcessamento = (resultados, stats) => {
+    const gerarLogsProcessamento = (resultadosList, stats) => {
       let logs = `[${new Date().toISOString()}] INÍCIO\n`
-      resultados.forEach((r, i) => {
-        logs += `[${r.status.toUpperCase()}] ${r.nome} (${r.registros} registros)\n`
+      resultadosList.forEach((r) => {
+        logs += `[SUCESSO] ${r.nome} (${r.registros} registros)\n`
       })
       logs += `[INFO] Concluído em ${stats.tempoProcessamento}s\n`
-      logs += `[${new Date().toISOString()}] FIM\n`
       return logs
     }
 
-    const gerarDadosExemplo = (tipo, numRegistros, numColunas) => {
+    const gerarDadosExemplo = (numRegistros) => {
       const dados = []
-      const municipios = ['Cuiabá', 'Várzea Grande', 'Rondonópolis', 'Sinop', 'Sorriso', 'Lucas do Rio Verde']
+      const municipios = ['Cuiabá', 'Várzea Grande', 'Rondonópolis', 'Sinop', 'Sorriso']
       const statusList = ['Atingiu', 'Progresso', 'Abaixo']
 
-      for (let i = 0; i < Math.min(numRegistros, 50); i++) {
-        const registro = {}
-        registro.municipio = municipios[Math.floor(Math.random() * municipios.length)]
-        registro.populacao = Math.floor(Math.random() * 500000) + 10000
-        registro.agricultores = Math.floor(Math.random() * 5000) + 500
-        registro.percentualPNAE = Math.floor(Math.random() * 60) + 5
-        registro.status = statusList[Math.floor(Math.random() * statusList.length)]
-        registro.valorRepasse = (Math.random() * 2000000 + 100000).toFixed(2)
-        dados.push(registro)
+      for (let j = 0; j < Math.min(numRegistros, 50); j++) {
+        dados.push({
+          municipio: municipios[Math.floor(Math.random() * municipios.length)],
+          populacao: Math.floor(Math.random() * 500000) + 10000,
+          agricultores: Math.floor(Math.random() * 5000) + 500,
+          percentualPNAE: Math.floor(Math.random() * 60) + 5,
+          status: statusList[Math.floor(Math.random() * statusList.length)],
+          valorRepasse: (Math.random() * 2000000 + 100000).toFixed(2)
+        })
       }
       return dados
     }
 
     const limparTudo = () => {
-      arquivosUpload.value = []
+      arquivosSelecionados.value = []
       arquivosProcessados.value = []
       resultados.value = []
       dadosProcessados.value = []
@@ -1211,10 +1185,9 @@ export default {
       dialogoVisualizador.value = true
     }
 
-    // Funções auxiliares
     const getTipoArquivo = (nome) => {
       const ext = nome.split('.').pop().toLowerCase()
-      const tipos = { csv: 'csv', json: 'json', xml: 'xml', xlsx: 'excel', xls: 'excel', txt: 'texto', pdf: 'pdf', sql: 'sql' }
+      const tipos = { csv: 'csv', json: 'json', xml: 'xml', xlsx: 'excel', txt: 'texto', pdf: 'pdf', sql: 'sql' }
       return tipos[ext] || 'desconhecido'
     }
 
@@ -1228,12 +1201,6 @@ export default {
       const tipo = getTipoArquivo(nome)
       const cores = { csv: 'green', json: 'blue', xml: 'orange', excel: 'positive', texto: 'grey', pdf: 'negative', sql: 'purple' }
       return cores[tipo] || 'grey'
-    }
-
-    const getStatusArquivo = (arquivo) => {
-      if (arquivo.__uploaded) return { texto: 'Enviado', cor: 'positive' }
-      if (arquivo.__failed) return { texto: 'Falha', cor: 'negative' }
-      return { texto: 'Pendente', cor: 'warning' }
     }
 
     const formatarBytes = (bytes) => {
@@ -1254,17 +1221,16 @@ export default {
       }
     }, { deep: true })
 
-    onMounted(() => {})
-
     return {
       uploaderRef,
-      arquivosUpload,
+      arquivosSelecionados,
       processando,
       exportando,
       expanded,
       mostrarDetalhes,
       dialogoVisualizador,
       filtroTabela,
+      dragOver,
       tipoDadosDetectado,
       encodingDetectado,
       delimitadorDetectado,
@@ -1292,10 +1258,10 @@ export default {
       colunasTabela,
       dadosProcessadosFiltrados,
       graficoTiposChart,
-      onFilesAdded,
-      onFileRemoved,
-      onFilesUploaded,
-      onUploadFailed,
+      triggerFileSelect,
+      onDropFiles,
+      onFilesSelected,
+      processarArquivosSelecionados,
       otimizarAutomaticamente,
       toggleSugestao,
       processarArquivos,
@@ -1304,7 +1270,6 @@ export default {
       abrirVisualizadorDados,
       getIconeArquivo,
       getCorArquivo,
-      getStatusArquivo,
       formatarBytes
     }
   }
@@ -1335,14 +1300,24 @@ export default {
 
 .uploader-full-width {
   width: 100%;
+}
+
+.drop-zone {
   border: 2px dashed #e2e8f0;
   border-radius: 16px;
   background: #fafbfc;
+  transition: all 0.2s ease;
+  cursor: pointer;
 }
 
-.uploader-full-width:hover {
+.drop-zone:hover {
   border-color: #1976d2;
   background: #f8fafc;
+}
+
+.drop-zone.drag-over {
+  border-color: #1976d2;
+  background: #e8f0fe;
 }
 
 .bg-primary-1 { background: rgba(25, 118, 210, 0.08); }

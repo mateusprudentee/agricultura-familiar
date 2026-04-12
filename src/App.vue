@@ -844,7 +844,7 @@ const navigateTo = (path) => {
 watch(() => route.path, (newPath) => {
   // Verificar e expandir o menu correspondente
   // Adicionado '/ia' ao dashboard
-  if (['/dashboard', '/relatorio', '/fonte-publica'].includes(newPath)) {
+  if (['/dashboard', '/relatorio', '/fonte-publica', '/dados'].includes(newPath)) {
     activeMenu.value = 'dashboard'
   } else if (['/verbas-por-municipio', '/repasses-auxilios-pnae', '/evolucao-2-anos'].includes(newPath)) {
     activeMenu.value = 'financiamento'
