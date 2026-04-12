@@ -125,9 +125,9 @@ const triggerVerify = () => {
   })
 
   localStorage.setItem(
-    'captcha_expire',
-    String(Date.now() + 3 * 60 * 60 * 1000)
-  )
+  'captcha_expire',
+  String(Date.now() + 24 * 60 * 60 * 1000)
+)
 
   // 🔥 IMPORTANTE: reload completo (faz navbar reaparecer corretamente)
   setTimeout(() => {

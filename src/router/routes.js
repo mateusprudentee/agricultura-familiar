@@ -27,6 +27,9 @@ const routes = [
       { path: 'fonte-publica', component: () => import('pages/FontePublica.vue') },
       { path: 'verbas-por-municipio', component: () => import('../financiamento/VerbasPage.vue') },
       { path: 'repasses-auxilios-pnae', component: () => import('../financiamento/RepassesPNAE.vue') },
+      { path: 'ods2-fome-zero', component: () => import('../ods/Ods2.vue') },
+      { path: 'ods3-saude-bem-estar', component: () => import('../ods/Ods3.vue') },
+      { path: 'ods4-educacao-qualidade', component: () => import('../ods/Ods4.vue') },
       { path: 'dados', component: () => import('pages/DadosPage.vue') }
     ]
   },

@@ -149,20 +149,7 @@
               </q-item>
             </q-expansion-item>
 
-            <!-- PNAE -->
-            <q-expansion-item
-              icon="school"
-              label="PNAE - Merenda Escolar"
-              group="menu"
-              class="mobile-menu-item"
-            >
-              <q-item clickable v-ripple @click="navigateTo('/cumprimento-pnae')">
-                <q-item-section>Cumprimento do PNAE</q-item-section>
-              </q-item>
-              <q-item clickable v-ripple @click="navigateTo('/escolas-beneficiadas')">
-                <q-item-section>Escolas Beneficiadas</q-item-section>
-              </q-item>
-            </q-expansion-item>
+
 
             <!-- ODS -->
             <q-expansion-item
@@ -663,82 +650,13 @@
 
             <!-- PNAE (modo normal) -->
             <div v-if="!miniState" class="menu-section">
-              <q-item
-                clickable
-                v-ripple
-                class="menu-expansion-header pnae-color"
-                @click="toggleSubmenu('pnae')"
-              >
-                <q-item-section avatar>
-                  <q-icon name="school" />
-                </q-item-section>
-                <q-item-section>PNAE - Merenda Escolar</q-item-section>
-                <q-item-section side>
-                  <q-icon :name="activeMenu === 'pnae' ? 'expand_less' : 'expand_more'" />
-                </q-item-section>
-              </q-item>
-              <div v-if="activeMenu === 'pnae'" class="menu-items">
-                <q-item
-                  clickable
-                  v-ripple
-                  class="menu-item"
-                  :class="{ 'menu-item-active': isActiveRoute('/cumprimento-pnae') }"
-                  @click="navigateTo('/cumprimento-pnae')"
-                >
-                  <q-item-section>Cumprimento do PNAE</q-item-section>
-                </q-item>
-                <q-item
-                  clickable
-                  v-ripple
-                  class="menu-item"
-                  :class="{ 'menu-item-active': isActiveRoute('/escolas-beneficiadas') }"
-                  @click="navigateTo('/escolas-beneficiadas')"
-                >
-                  <q-item-section>Escolas Beneficiadas</q-item-section>
-                </q-item>
-              </div>
+
+
             </div>
 
             <!-- PNAE (modo mini hover) -->
             <div v-else class="menu-section">
-              <div
-                class="menu-hover-container"
-                @mouseenter="openHoverMenu('pnae')"
-                @mouseleave="closeHoverMenuWithDelay('pnae')"
-              >
-                <q-item clickable v-ripple class="menu-expansion-header pnae-color">
-                  <q-item-section avatar>
-                    <q-icon name="school" />
-                  </q-item-section>
-                </q-item>
-                <q-menu
-                  ref="pnaeMenuRef"
-                  :model-value="hoverMenuActive === 'pnae'"
-                  anchor="top right"
-                  self="top left"
-                  :offset="[5, 0]"
-                  class="hover-menu"
-                  @mouseenter="cancelCloseHoverMenu"
-                  @mouseleave="closeHoverMenu('pnae')"
-                >
-                  <q-list dense>
-                    <q-item
-                      clickable
-                      :class="{ 'hover-menu-item-active': isActiveRoute('/cumprimento-pnae') }"
-                      @click="navigateTo('/cumprimento-pnae')"
-                    >
-                      <q-item-section>Cumprimento do PNAE</q-item-section>
-                    </q-item>
-                    <q-item
-                      clickable
-                      :class="{ 'hover-menu-item-active': isActiveRoute('/escolas-beneficiadas') }"
-                      @click="navigateTo('/escolas-beneficiadas')"
-                    >
-                      <q-item-section>Escolas Beneficiadas</q-item-section>
-                    </q-item>
-                  </q-list>
-                </q-menu>
-              </div>
+
             </div>
 
             <!-- ODS (modo normal) -->
