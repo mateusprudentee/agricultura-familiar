@@ -67,78 +67,98 @@ const digits = ref(['', '', '', '', '', ''])
 const hiddenPassword = ref('')
 const SECRET = '012698'
 
+let typingTimer = null
+
 // =====================
-// AUTOFILL WATCH
+// AUTOFILL WATCH (CORRIGIDO)
 // =====================
 watch(hiddenPassword, (val) => {
   if (!val) return
 
   const chars = val.slice(0, 6).split('')
 
-  digits.value = ['', '', '', '', '', '']
+  digits.value = ['','','','','','']
 
   chars.forEach((c, i) => {
     digits.value[i] = c
   })
 
-  verify()
+  triggerVerify()
 })
 
+
 // =====================
-// VERIFY
+// INPUT CONTROL (DEBOUNCE)
 // =====================
-const verify = () => {
+const onInput = () => {
+  clearTimeout(typingTimer)
+
+  typingTimer = setTimeout(() => {
+    triggerVerify()
+  }, 120) // pequeno delay evita duplicação e autofill bug
+}
+
+
+// =====================
+// VERIFY (ROBUSTO)
+// =====================
+const triggerVerify = () => {
   const value = digits.value.join('')
 
-  if (value.length !== SECRET.length) return
+  if (value.length !== 6) return
 
-  if (value === SECRET) {
-    $q.notify({
-      type: 'positive',
-      message: 'Acesso liberado com sucesso!'
-    })
-
-    localStorage.setItem(
-      'captcha_expire',
-      String(Date.now() + 3 * 60 * 60 * 1000)
-    )
-
-    setTimeout(() => {
-      router.push('/')
-    }, 600)
-
-  } else {
+  if (value !== SECRET) {
     $q.notify({
       type: 'negative',
       message: 'Código incorreto'
     })
 
-    digits.value = ['', '', '', '', '', '']
+    digits.value = ['','','','','','']
     hiddenPassword.value = ''
+    return
   }
+
+  // sucesso
+  $q.notify({
+    type: 'positive',
+    message: 'Acesso liberado com sucesso!'
+  })
+
+  localStorage.setItem(
+    'captcha_expire',
+    String(Date.now() + 3 * 60 * 60 * 1000)
+  )
+
+  // 🔥 IMPORTANTE: reload completo (faz navbar reaparecer corretamente)
+  setTimeout(() => {
+    router.push('/').then(() => {
+      window.location.reload()
+    })
+  }, 300)
 }
 
-// =====================
-// INPUT CONTROL
-// =====================
-const onInput = () => {
-  verify()
-}
 
+// =====================
+// KEY NAVIGATION (CORRIGIDO)
+// =====================
 const focusNext = (index, event) => {
   const inputs = document.querySelectorAll('.digit-input input')
 
-  if (event.key !== 'Backspace' && inputs[index + 1]) {
-    inputs[index + 1].focus()
+  if (event.key === 'Backspace') {
+    if (inputs[index - 1]) inputs[index - 1].focus()
+    return
   }
 
-  if (event.key === 'Backspace' && inputs[index - 1]) {
-    inputs[index - 1].focus()
+  if (digits.value[index] && inputs[index + 1]) {
+    inputs[index + 1].focus()
   }
 }
 </script>
 
-<style scoped>
+<style >
+.q-drawer-container {
+  display: none;
+}
 .captcha-card {
   width: 100%;
   max-width: 460px;

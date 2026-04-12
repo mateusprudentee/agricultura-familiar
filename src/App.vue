@@ -1,5 +1,5 @@
 <template>
-  <q-layout view="lHh Lpr lFf" class="bg-grey-1">
+  <q-layout  view="lHh Lpr lFf" class="bg-grey-1">
     <!-- Sidebar -->
     <q-drawer
       v-model="leftDrawerOpen"
@@ -789,7 +789,7 @@
 </template>
 
 <script setup>
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
@@ -923,7 +923,18 @@ onUnmounted(() => {
   if (interval) clearInterval(interval)
   if (closeTimeout) clearTimeout(closeTimeout)
 })
+const isCaptcha = computed(() => route.path === '/captcha')
 
+watch(
+  isCaptcha,
+  (val) => {
+    if (val) {
+      miniState.value = true
+      leftDrawerOpen.value = true // mantém aberto em mini
+    }
+  },
+  { immediate: true }
+)
 // ======================
 // MENU AUTO EXPAND BASED ON ROUTE
 // ======================
