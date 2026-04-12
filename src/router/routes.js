@@ -30,6 +30,7 @@ const routes = [
       { path: 'ods2-fome-zero', component: () => import('../ods/Ods2.vue') },
       { path: 'ods3-saude-bem-estar', component: () => import('../ods/Ods3.vue') },
       { path: 'ods4-educacao-qualidade', component: () => import('../ods/Ods4.vue') },
+      { path: 'relatorios', component: () => import('../portal/Relatorios.vue') },
       { path: 'dados', component: () => import('pages/DadosPage.vue') }
     ]
   },
