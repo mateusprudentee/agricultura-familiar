@@ -22,8 +22,12 @@ const routes = [
         component: () => import('pages/DashboardPage.vue')
       },
       {
-        path: 'ia',
-        component: () => import('pages/IAPage.vue')
+        path: 'fonte-publica',
+        component: () => import('pages/FontePublica.vue')
+      },
+      {
+        path: 'dados',
+        component: () => import('pages/DadosPage.vue')
       }
     ]
   },

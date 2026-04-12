@@ -74,13 +74,28 @@
   clickable
   v-ripple
   class="menu-item"
-  :class="{ 'menu-item-active': isActiveRoute('/ia') }"
-  @click="navigateTo('/ia')"
+  :class="{ 'menu-item-active': isActiveRoute('/fonte-publica') }"
+  @click="navigateTo('/fonte-publica')"
 >
 
 
   <q-item-section>
-    Inteligência Artificial
+    Fontes Públicas
+  </q-item-section>
+</q-item>
+
+
+  <q-item
+  clickable
+  v-ripple
+  class="menu-item"
+  :class="{ 'menu-item-active': isActiveRoute('/dados') }"
+  @click="navigateTo('/dados')"
+>
+
+
+  <q-item-section>
+    Carregar Dados
   </q-item-section>
 </q-item>
               </div>
@@ -829,7 +844,7 @@ const navigateTo = (path) => {
 watch(() => route.path, (newPath) => {
   // Verificar e expandir o menu correspondente
   // Adicionado '/ia' ao dashboard
-  if (['/dashboard', '/relatorio', '/ia'].includes(newPath)) {
+  if (['/dashboard', '/relatorio', '/fonte-publica'].includes(newPath)) {
     activeMenu.value = 'dashboard'
   } else if (['/verbas-por-municipio', '/repasses-auxilios-pnae', '/evolucao-2-anos'].includes(newPath)) {
     activeMenu.value = 'financiamento'
