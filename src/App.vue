@@ -15,12 +15,12 @@
 
         <q-toolbar-title class="mobile-logo-container">
           <router-link to="/" class="mobile-logo-link">
-            <div class="mobile-logo-area"></div>
-
-          </router-link>
-          <span class="logo-text-mobile" @click="navigate">
+            <span class="logo-text-mobile" @click="navigate">
                 Agricultura Familiar em Mato Grosso
               </span>
+
+          </router-link>
+
         </q-toolbar-title>
 
         <q-btn
@@ -36,21 +36,19 @@
               <q-item clickable @click="navigateTo('/dashboard')">
                 <q-item-section>Dashboard</q-item-section>
               </q-item>
+              <q-item clickable @click="navigateTo('/repasses-auxilios-pnae')">
+                <q-item-section>Repasses PNAE</q-item-section>
+              </q-item>
+              <q-item clickable @click="navigateTo('/fonte-publica')">
+                <q-item-section>Fontes Públicas</q-item-section>
+              </q-item>
+              <q-item clickable @click="navigateTo('/dados')">
+                <q-item-section>Processamento de Dados</q-item-section>
+              </q-item>
               <q-item clickable @click="navigateTo('/verbas-por-municipio')">
-                <q-item-section>Financiamento</q-item-section>
+                <q-item-section>Verbas por Município</q-item-section>
               </q-item>
-              <q-item clickable @click="navigateTo('/capacidade-por-municipio')">
-                <q-item-section>Capacidade Produtiva</q-item-section>
-              </q-item>
-              <q-item clickable @click="navigateTo('/dependencia-agricultura')">
-                <q-item-section>Indicadores</q-item-section>
-              </q-item>
-              <q-item clickable @click="navigateTo('/cumprimento-pnae')">
-                <q-item-section>PNAE</q-item-section>
-              </q-item>
-              <q-item clickable @click="navigateTo('/ods2-fome-zero')">
-                <q-item-section>ODS</q-item-section>
-              </q-item>
+
               <q-separator />
 
             </q-list>
