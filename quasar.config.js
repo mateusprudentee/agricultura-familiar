@@ -44,7 +44,7 @@ export default defineConfig((/* ctx */) => {
       dark: false,
       config: {},
       iconSet: 'material-icons',
-      plugins: ['Notify'],
+      plugins: ['Notify', 'Dialog'],
     },
 
     animations: [],

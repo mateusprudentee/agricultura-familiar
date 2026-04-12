@@ -1,5 +1,5 @@
 <template>
-      <q-toolbar>
+      <q-toolbar >
         <q-toolbar-title class="text-weight-medium">
           <q-icon name="agriculture" color="primary" size="sm" class="q-mr-sm" />
           Agricultura Familiar • Mato Grosso
@@ -14,7 +14,10 @@
       </q-toolbar>
 
       <!-- Tabs de navegação -->
-      <q-tabs v-model="tabAtiva" dense class="text-grey-7 tabs" active-color="primary" indicator-color="primary" align="left">
+      <q-tabs v-model="tabAtiva" class="tabs"
+        active-color="primary"
+        indicator-color="primary"
+        align="left">
         <q-tab name="visaoGeral" icon="dashboard" label="Visão Geral" />
         <q-tab name="municipios" icon="location_city" label="Municípios" />
         <q-tab name="escolas" icon="school" label="Escolas" />
@@ -861,7 +864,7 @@ export default {
       { nome: 'Cuiabá', populacao: 650912, agricultores: 3420, secretaria: true, statusPNAE: 'Progresso', percentualPNAE: 28 },
       { nome: 'Várzea Grande', populacao: 300078, agricultores: 2150, secretaria: false, statusPNAE: 'Progresso', percentualPNAE: 24 },
       { nome: 'Rondonópolis', populacao: 244911, agricultores: 3890, secretaria: true, statusPNAE: 'Atingiu', percentualPNAE: 35 },
-      { nome: 'Sinop', populacao: 156390, agricultores: 5230, secretaria: true, statusPNAE: 'Atingiu', percentualPNAE: 47 },
+      { nome: 'Sinop', populacao: 156390, agricultores: 5230, secretaria: false, statusPNAE: 'Atingiu', percentualPNAE: 47 },
       { nome: 'Sorriso', populacao: 110635, agricultores: 6840, secretaria: true, statusPNAE: 'Atingiu', percentualPNAE: 42 },
       { nome: 'Lucas do Rio Verde', populacao: 83456, agricultores: 4520, secretaria: true, statusPNAE: 'Atingiu', percentualPNAE: 58 },
       { nome: 'Tangará da Serra', populacao: 107631, agricultores: 3150, secretaria: false, statusPNAE: 'Progresso', percentualPNAE: 22 },
@@ -1155,7 +1158,7 @@ const baixarDocumento = (url) => {
 .tabs {
   background: rgba(0, 0, 255, 0.034);
   border-radius: 30px;
-  padding: 0.5em;
+  color: rgb(0, 119, 255);
 }
 
 

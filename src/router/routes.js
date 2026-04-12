@@ -25,6 +25,8 @@ const routes = [
       { path: '', component: () => import('pages/HomePage.vue') },
       { path: 'dashboard', component: () => import('pages/DashboardPage.vue') },
       { path: 'fonte-publica', component: () => import('pages/FontePublica.vue') },
+      { path: 'verbas-por-municipio', component: () => import('../financiamento/VerbasPage.vue') },
+      { path: 'repasses-auxilios-pnae', component: () => import('../financiamento/RepassesPNAE.vue') },
       { path: 'dados', component: () => import('pages/DadosPage.vue') }
     ]
   },
