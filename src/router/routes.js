@@ -1,39 +1,39 @@
 const routes = [
+{
+  path: '/captcha',
+  component: () => import('pages/CaptchaPage.vue'),
+  meta: { public: true }
+},
   {
     path: '/login',
     component: () => import('layouts/AuthLayout.vue'),
     children: [
       {
         path: '',
-        component: () => import('pages/LoginPage.vue')
+        name: 'login',
+        component: () => import('pages/LoginPage.vue'),
+        // Login geralmente é público, se não for, mude para false
+        meta: { public: true }
       }
     ]
   },
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
+    meta: { public: false }, // Protege todas as rotas filhas por padrão
     children: [
-      {
-        path: '',
-        component: () => import('pages/HomePage.vue')
-      },
-      {
-        path: 'dashboard',
-        component: () => import('pages/DashboardPage.vue')
-      },
-      {
-        path: 'fonte-publica',
-        component: () => import('pages/FontePublica.vue')
-      },
-      {
-        path: 'dados',
-        component: () => import('pages/DadosPage.vue')
-      }
+      { path: '', component: () => import('pages/HomePage.vue') },
+      { path: 'dashboard', component: () => import('pages/DashboardPage.vue') },
+      { path: 'fonte-publica', component: () => import('pages/FontePublica.vue') },
+      { path: 'dados', component: () => import('pages/DadosPage.vue') }
     ]
   },
+
+  // Sempre deixe a rota de erro por último
   {
     path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorPage.vue')
+    component: () => import('pages/ErrorPage.vue'),
+    meta: { public: true }
   }
 ]
 

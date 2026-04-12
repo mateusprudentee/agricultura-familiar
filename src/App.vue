@@ -741,7 +741,24 @@
       <!-- Rodapé com tooltip no hover -->
       <div class="info" v-if="!miniState">
         <span class="info-text">
-          Versão 1.0 pre-0<br>
+
+     <div
+  v-if="timeLeft !== 'sem sessão ativa' && timeLeft !== 'Expirou!'"
+  style="margin-bottom: -18px;"
+>
+  <span>
+    Sessão expira em
+    <b>
+      {{ timeLeft }}
+      <q-tooltip>
+        {{ expireDateFormatted }}
+      </q-tooltip>
+    </b>
+  </span>
+</div>
+
+    <br>
+          Versão 1.0 pre-0 mestrado<br>
           {{ new Date().toLocaleString() }}<br>
           UFMT <q-icon name="copyright"></q-icon> Todos os direitos reservados.
         </span>
@@ -772,23 +789,30 @@
 </template>
 
 <script setup>
-import { ref, watch } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 
 const route = useRoute()
 const router = useRouter()
+
 const leftDrawerOpen = ref(true)
 const miniState = ref(false)
 const activeMenu = ref(null)
 const hoverMenuActive = ref(null)
-let closeTimeout = null
 
-// Função para verificar se a rota atual corresponde ao path
+let closeTimeout = null
+let interval = null
+
+// ======================
+// ROUTE ACTIVE
+// ======================
 const isActiveRoute = (path) => {
   return route.path === path
 }
-
-// Controle dos menus flutuantes (hover)
+const expireDateFormatted = ref('')
+// ======================
+// HOVER MENU CONTROL
+// ======================
 const openHoverMenu = (menu) => {
   if (closeTimeout) clearTimeout(closeTimeout)
   hoverMenuActive.value = menu
@@ -815,6 +839,9 @@ const closeHoverMenu = (menu) => {
   }
 }
 
+// ======================
+// DRAWER CONTROL
+// ======================
 const toggleDrawer = () => {
   miniState.value = !miniState.value
   if (!miniState.value) {
@@ -828,38 +855,99 @@ const handleDrawerChange = (val) => {
   }
 }
 
+// ======================
+// MENU CONTROL
+// ======================
 const toggleSubmenu = (menu) => {
-  if (activeMenu.value === menu) {
-    activeMenu.value = null
-  } else {
-    activeMenu.value = menu
-  }
+  activeMenu.value = activeMenu.value === menu ? null : menu
 }
 
 const navigateTo = (path) => {
   router.push(path)
 }
 
-// Manter o menu expandido se a rota atual pertencer à categoria
-watch(() => route.path, (newPath) => {
-  // Verificar e expandir o menu correspondente
-  // Adicionado '/ia' ao dashboard
-  if (['/dashboard', '/relatorio', '/fonte-publica', '/dados'].includes(newPath)) {
-    activeMenu.value = 'dashboard'
-  } else if (['/verbas-por-municipio', '/repasses-auxilios-pnae', '/evolucao-2-anos'].includes(newPath)) {
-    activeMenu.value = 'financiamento'
-  } else if (['/capacidade-por-municipio', '/associacoes-cooperativas', '/assistencia-tecnica'].includes(newPath)) {
-    activeMenu.value = 'capacidade'
-  } else if (['/dependencia-agricultura', '/secretaria-especifica', '/populacao-demanda', '/agricultores-ativos-mt'].includes(newPath)) {
-    activeMenu.value = 'indicadores'
-  } else if (['/cumprimento-pnae', '/escolas-beneficiadas'].includes(newPath)) {
-    activeMenu.value = 'pnae'
-  } else if (['/ods2-fome-zero', '/ods3-saude-bem-estar', '/ods4-educacao-qualidade'].includes(newPath)) {
-    activeMenu.value = 'ods'
-  } else if (['/relatorios', '/analise-proximos-meses', '/infraestrutura', '/integracao-automatica'].includes(newPath)) {
-    activeMenu.value = 'portal'
+// ======================
+// CAPTCHa TIMER
+// ======================
+const timeLeft = ref('calculando...')
+
+const updateTimer = () => {
+  const expire = localStorage.getItem('captcha_expire')
+
+  if (!expire) {
+    timeLeft.value = 'sem sessão ativa'
+    expireDateFormatted.value = ''
+    return
   }
-}, { immediate: true })
+
+  const expireTime = Number(expire)
+  const diff = expireTime - Date.now()
+
+  if (diff <= 0) {
+    timeLeft.value = 'expirada'
+    expireDateFormatted.value = ''
+    localStorage.removeItem('captcha_expire')
+    return
+  }
+
+  // 👉 data/hora final (tooltip)
+  const date = new Date(expireTime)
+  expireDateFormatted.value = date.toLocaleString('pt-BR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit'
+  })
+
+  const totalSeconds = Math.floor(diff / 1000)
+
+  const days = Math.floor(totalSeconds / (60 * 60 * 24))
+  const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / 3600)
+  const minutes = Math.floor((totalSeconds % 3600) / 60)
+  const seconds = totalSeconds % 60
+
+  timeLeft.value = `${days}d ${hours}h ${minutes}m ${seconds}s`
+}
+
+// ======================
+// TIMER LIFECYCLE
+// ======================
+onMounted(() => {
+  updateTimer()
+  interval = setInterval(updateTimer, 1000)
+})
+
+onUnmounted(() => {
+  if (interval) clearInterval(interval)
+  if (closeTimeout) clearTimeout(closeTimeout)
+})
+
+// ======================
+// MENU AUTO EXPAND BASED ON ROUTE
+// ======================
+watch(
+  () => route.path,
+  (newPath) => {
+    if (['/dashboard', '/relatorio', '/fonte-publica', '/dados'].includes(newPath)) {
+      activeMenu.value = 'dashboard'
+    } else if (['/verbas-por-municipio', '/repasses-auxilios-pnae', '/evolucao-2-anos'].includes(newPath)) {
+      activeMenu.value = 'financiamento'
+    } else if (['/capacidade-por-municipio', '/associacoes-cooperativas', '/assistencia-tecnica'].includes(newPath)) {
+      activeMenu.value = 'capacidade'
+    } else if (['/dependencia-agricultura', '/secretaria-especifica', '/populacao-demanda', '/agricultores-ativos-mt'].includes(newPath)) {
+      activeMenu.value = 'indicadores'
+    } else if (['/cumprimento-pnae', '/escolas-beneficiadas'].includes(newPath)) {
+      activeMenu.value = 'pnae'
+    } else if (['/ods2-fome-zero', '/ods3-saude-bem-estar', '/ods4-educacao-qualidade'].includes(newPath)) {
+      activeMenu.value = 'ods'
+    } else if (['/relatorios', '/analise-proximos-meses', '/infraestrutura', '/integracao-automatica'].includes(newPath)) {
+      activeMenu.value = 'portal'
+    }
+  },
+  { immediate: true }
+)
 </script>
 
 <style scoped>

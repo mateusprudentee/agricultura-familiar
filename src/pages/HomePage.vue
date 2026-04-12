@@ -32,6 +32,8 @@
             </template>
           </q-input>
 
+          <q-chip icon="info" color="primary" text-color="white" style="margin-top: 30px;">Portal ainda em desenvolvimento para projeto interno. Dados ainda em análise.</q-chip>
+
           <!-- SUGESTÕES -->
           <q-card v-if="filteredSuggestions.length && showSuggestions" class="suggestions">
             <q-list separator>
@@ -197,8 +199,8 @@ export default {
      quickActions: [
   { title: 'Dashboard', icon: 'dashboard', to: '/dashboard' },
 
-  { title: 'Financiamento', icon: 'payments', to: '/verbas-por-municipio' },
-  { title: 'Capacidade Produtiva', icon: 'agriculture', to: '/capacidade-por-municipio' },
+  { title: 'Fontes Públicas', icon: 'payments', to: '/fonte-publica' },
+  { title: 'Carregar Dados', icon: 'upload', to: '/dados' },
   { title: 'Indicadores Municipais', icon: 'analytics', to: '/dependencia-agricultura' },
   { title: 'PNAE - Merenda Escolar', icon: 'school', to: '/cumprimento-pnae' },
   { title: 'ODS', icon: 'flag', to: '/ods2-fome-zero' },
