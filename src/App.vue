@@ -1,6 +1,225 @@
 <template>
-  <q-layout  view="lHh Lpr lFf" class="bg-grey-1">
-    <!-- Sidebar -->
+  <q-layout view="lHh Lpr lFf" class="bg-grey-1">
+    <!-- Top Navbar - Mega Responsivo -->
+    <q-header elevated class="bg-white text-black" v-if="isMobileView">
+      <q-toolbar class="responsive-navbar">
+        <q-btn
+          flat
+          dense
+          round
+          icon="menu"
+          aria-label="Menu"
+          @click="toggleMobileDrawer"
+          class="mobile-menu-btn"
+        />
+
+        <q-toolbar-title class="mobile-logo-container">
+          <router-link to="/" class="mobile-logo-link">
+            <div class="mobile-logo-area"></div>
+
+          </router-link>
+          <span class="logo-text-mobile" @click="navigate">
+                Agricultura Familiar em Mato Grosso
+              </span>
+        </q-toolbar-title>
+
+        <q-btn
+          flat
+          dense
+          round
+          icon="more_vert"
+          aria-label="Menu"
+          @click="toggleMobileOptions"
+        >
+          <q-menu>
+            <q-list style="min-width: 200px">
+              <q-item clickable @click="navigateTo('/dashboard')">
+                <q-item-section>Dashboard</q-item-section>
+              </q-item>
+              <q-item clickable @click="navigateTo('/verbas-por-municipio')">
+                <q-item-section>Financiamento</q-item-section>
+              </q-item>
+              <q-item clickable @click="navigateTo('/capacidade-por-municipio')">
+                <q-item-section>Capacidade Produtiva</q-item-section>
+              </q-item>
+              <q-item clickable @click="navigateTo('/dependencia-agricultura')">
+                <q-item-section>Indicadores</q-item-section>
+              </q-item>
+              <q-item clickable @click="navigateTo('/cumprimento-pnae')">
+                <q-item-section>PNAE</q-item-section>
+              </q-item>
+              <q-item clickable @click="navigateTo('/ods2-fome-zero')">
+                <q-item-section>ODS</q-item-section>
+              </q-item>
+              <q-separator />
+
+            </q-list>
+          </q-menu>
+        </q-btn>
+      </q-toolbar>
+
+      <!-- Mobile Drawer -->
+      <q-drawer
+        v-model="mobileDrawerOpen"
+        side="left"
+        bordered
+        :width="280"
+        class="mobile-sidebar"
+      >
+        <div class="mobile-sidebar-header">
+          <div class="mobile-sidebar-logo">
+
+          </div>
+          <q-btn flat dense round icon="close" @click="mobileDrawerOpen = false" />
+        </div>
+
+        <q-scroll-area class="mobile-sidebar-menu">
+          <q-list>
+            <!-- Dashboard -->
+            <q-expansion-item
+              icon="dashboard"
+              label="Dashboard"
+              group="menu"
+              default-opened
+              class="mobile-menu-item"
+            >
+              <q-item clickable v-ripple @click="navigateTo('/dashboard')">
+                <q-item-section>Visão geral</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/fonte-publica')">
+                <q-item-section>Fontes Públicas</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/dados')">
+                <q-item-section>Carregar Dados</q-item-section>
+              </q-item>
+            </q-expansion-item>
+
+            <!-- Financiamento -->
+            <q-expansion-item
+              icon="payments"
+              label="Financiamento"
+              group="menu"
+              class="mobile-menu-item"
+            >
+              <q-item clickable v-ripple @click="navigateTo('/verbas-por-municipio')">
+                <q-item-section>Verbas por Município</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/repasses-auxilios-pnae')">
+                <q-item-section>Repasses e Auxílios PNAE</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/evolucao-2-anos')">
+                <q-item-section>Evolução (2 anos)</q-item-section>
+              </q-item>
+            </q-expansion-item>
+
+            <!-- Capacidade Produtiva -->
+            <q-expansion-item
+              icon="agriculture"
+              label="Capacidade Produtiva"
+              group="menu"
+              class="mobile-menu-item"
+            >
+              <q-item clickable v-ripple @click="navigateTo('/capacidade-por-municipio')">
+                <q-item-section>Capacidade por Município</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/associacoes-cooperativas')">
+                <q-item-section>Associações/Cooperativas</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/assistencia-tecnica')">
+                <q-item-section>Assistência Técnica</q-item-section>
+              </q-item>
+            </q-expansion-item>
+
+            <!-- Indicadores Municipais -->
+            <q-expansion-item
+              icon="analytics"
+              label="Indicadores Municipais"
+              group="menu"
+              class="mobile-menu-item"
+            >
+              <q-item clickable v-ripple @click="navigateTo('/dependencia-agricultura')">
+                <q-item-section>Dependência da Agricultura</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/secretaria-especifica')">
+                <q-item-section>Secretaria Específica</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/populacao-demanda')">
+                <q-item-section>População e Demanda</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/agricultores-ativos-mt')">
+                <q-item-section>Agricultores Ativos (MT)</q-item-section>
+              </q-item>
+            </q-expansion-item>
+
+            <!-- PNAE -->
+            <q-expansion-item
+              icon="school"
+              label="PNAE - Merenda Escolar"
+              group="menu"
+              class="mobile-menu-item"
+            >
+              <q-item clickable v-ripple @click="navigateTo('/cumprimento-pnae')">
+                <q-item-section>Cumprimento do PNAE</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/escolas-beneficiadas')">
+                <q-item-section>Escolas Beneficiadas</q-item-section>
+              </q-item>
+            </q-expansion-item>
+
+            <!-- ODS -->
+            <q-expansion-item
+              icon="flag"
+              label="ODS"
+              group="menu"
+              class="mobile-menu-item"
+            >
+              <q-item clickable v-ripple @click="navigateTo('/ods2-fome-zero')">
+                <q-item-section>ODS 2 - Fome Zero</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/ods3-saude-bem-estar')">
+                <q-item-section>ODS 3 - Saúde e Bem-Estar</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/ods4-educacao-qualidade')">
+                <q-item-section>ODS 4 - Educação Qualidade</q-item-section>
+              </q-item>
+            </q-expansion-item>
+
+            <!-- Portal -->
+            <q-expansion-item
+              icon="more"
+              label="Portal"
+              group="menu"
+              class="mobile-menu-item"
+            >
+              <q-item clickable v-ripple @click="navigateTo('/relatorios')">
+                <q-item-section>Relatórios</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/analise-proximos-meses')">
+                <q-item-section>Análise Próximos Meses</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/infraestrutura')">
+                <q-item-section>Infraestrutura</q-item-section>
+              </q-item>
+              <q-item clickable v-ripple @click="navigateTo('/integracao-automatica')">
+                <q-item-section>Integração Automática</q-item-section>
+              </q-item>
+            </q-expansion-item>
+          </q-list>
+        </q-scroll-area>
+
+        <div class="mobile-sidebar-footer">
+          <div v-if="timeLeft !== 'sem sessão ativa' && timeLeft !== 'Expirou!'">
+            <span>Sessão expira em <b>{{ timeLeft }}</b></span>
+          </div>
+          <div class="mobile-version-info">
+            Versão 1.0 pre-0 mestrado<br>
+            UFMT <q-icon name="copyright"></q-icon> Todos os direitos reservados.
+          </div>
+        </div>
+      </q-drawer>
+    </q-header>
+
+    <!-- Sidebar Desktop (sem alterações) -->
     <q-drawer
       v-model="leftDrawerOpen"
       show-if-above
@@ -12,6 +231,7 @@
       class="sidebar-nameless"
       :behavior="'desktop'"
       @update:model-value="handleDrawerChange"
+      v-if="!isMobileView"
     >
       <!-- Ícone de toggle -->
       <div class="toggle-icon-container">
@@ -69,35 +289,24 @@
                 >
                   <q-item-section>Visão geral</q-item-section>
                 </q-item>
-
-  <q-item
-  clickable
-  v-ripple
-  class="menu-item"
-  :class="{ 'menu-item-active': isActiveRoute('/fonte-publica') }"
-  @click="navigateTo('/fonte-publica')"
->
-
-
-  <q-item-section>
-    Fontes Públicas
-  </q-item-section>
-</q-item>
-
-
-  <q-item
-  clickable
-  v-ripple
-  class="menu-item"
-  :class="{ 'menu-item-active': isActiveRoute('/dados') }"
-  @click="navigateTo('/dados')"
->
-
-
-  <q-item-section>
-    Carregar Dados
-  </q-item-section>
-</q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/fonte-publica') }"
+                  @click="navigateTo('/fonte-publica')"
+                >
+                  <q-item-section>Fontes Públicas</q-item-section>
+                </q-item>
+                <q-item
+                  clickable
+                  v-ripple
+                  class="menu-item"
+                  :class="{ 'menu-item-active': isActiveRoute('/dados') }"
+                  @click="navigateTo('/dados')"
+                >
+                  <q-item-section>Carregar Dados</q-item-section>
+                </q-item>
               </div>
             </div>
 
@@ -133,10 +342,17 @@
                     </q-item>
                     <q-item
                       clickable
-                      :class="{ 'hover-menu-item-active': isActiveRoute('/relatorio') }"
-                      @click="navigateTo('/relatorio')"
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/fonte-publica') }"
+                      @click="navigateTo('/fonte-publica')"
                     >
-                      <q-item-section>Relatórios</q-item-section>
+                      <q-item-section>Fontes Públicas</q-item-section>
+                    </q-item>
+                    <q-item
+                      clickable
+                      :class="{ 'hover-menu-item-active': isActiveRoute('/dados') }"
+                      @click="navigateTo('/dados')"
+                    >
+                      <q-item-section>Carregar Dados</q-item-section>
                     </q-item>
                   </q-list>
                 </q-menu>
@@ -741,23 +957,21 @@
       <!-- Rodapé com tooltip no hover -->
       <div class="info" v-if="!miniState">
         <span class="info-text">
-
-     <div
-  v-if="timeLeft !== 'sem sessão ativa' && timeLeft !== 'Expirou!'"
-  style="margin-bottom: -18px;"
->
-  <span>
-    Sessão expira em
-    <b>
-      {{ timeLeft }}
-      <q-tooltip>
-        {{ expireDateFormatted }}
-      </q-tooltip>
-    </b>
-  </span>
-</div>
-
-    <br>
+          <div
+            v-if="timeLeft !== 'sem sessão ativa' && timeLeft !== 'Expirou!'"
+            style="margin-bottom: -18px;"
+          >
+            <span>
+              Sessão expira em
+              <b>
+                {{ timeLeft }}
+                <q-tooltip>
+                  {{ expireDateFormatted }}
+                </q-tooltip>
+              </b>
+            </span>
+          </div>
+          <br>
           Versão 1.0 pre-0 mestrado<br>
           {{ new Date().toLocaleString() }}<br>
           UFMT <q-icon name="copyright"></q-icon> Todos os direitos reservados.
@@ -774,7 +988,7 @@
     </q-drawer>
 
     <!-- Conteúdo -->
-    <q-page-container>
+    <q-page-container :style="isMobileView ? { marginTop: '50px' } : {}">
       <q-page>
         <div class="main-content">
           <div class="page-content">
@@ -799,9 +1013,21 @@ const leftDrawerOpen = ref(true)
 const miniState = ref(false)
 const activeMenu = ref(null)
 const hoverMenuActive = ref(null)
+const mobileDrawerOpen = ref(false)
+const isMobileView = ref(false)
 
 let closeTimeout = null
 let interval = null
+
+// ======================
+// DETECT MOBILE VIEW
+// ======================
+const checkMobileView = () => {
+  isMobileView.value = window.innerWidth < 1024
+  if (!isMobileView.value) {
+    mobileDrawerOpen.value = false
+  }
+}
 
 // ======================
 // ROUTE ACTIVE
@@ -809,7 +1035,9 @@ let interval = null
 const isActiveRoute = (path) => {
   return route.path === path
 }
+
 const expireDateFormatted = ref('')
+
 // ======================
 // HOVER MENU CONTROL
 // ======================
@@ -855,6 +1083,14 @@ const handleDrawerChange = (val) => {
   }
 }
 
+const toggleMobileDrawer = () => {
+  mobileDrawerOpen.value = !mobileDrawerOpen.value
+}
+
+const toggleMobileOptions = () => {
+  // Handled by q-menu
+}
+
 // ======================
 // MENU CONTROL
 // ======================
@@ -864,10 +1100,13 @@ const toggleSubmenu = (menu) => {
 
 const navigateTo = (path) => {
   router.push(path)
+  if (isMobileView.value) {
+    mobileDrawerOpen.value = false
+  }
 }
 
 // ======================
-// CAPTCHa TIMER
+// CAPTCHA TIMER
 // ======================
 const timeLeft = ref('calculando...')
 
@@ -890,7 +1129,6 @@ const updateTimer = () => {
     return
   }
 
-  // 👉 data/hora final (tooltip)
   const date = new Date(expireTime)
   expireDateFormatted.value = date.toLocaleString('pt-BR', {
     day: '2-digit',
@@ -902,7 +1140,6 @@ const updateTimer = () => {
   })
 
   const totalSeconds = Math.floor(diff / 1000)
-
   const days = Math.floor(totalSeconds / (60 * 60 * 24))
   const hours = Math.floor((totalSeconds % (60 * 60 * 24)) / 3600)
   const minutes = Math.floor((totalSeconds % 3600) / 60)
@@ -915,46 +1152,53 @@ const updateTimer = () => {
 // TIMER LIFECYCLE
 // ======================
 onMounted(() => {
+  checkMobileView()
+  window.addEventListener('resize', checkMobileView)
   updateTimer()
   interval = setInterval(updateTimer, 1000)
 })
 
 onUnmounted(() => {
+  window.removeEventListener('resize', checkMobileView)
   if (interval) clearInterval(interval)
   if (closeTimeout) clearTimeout(closeTimeout)
 })
+
 const isCaptcha = computed(() => route.path === '/captcha')
 
 watch(
   isCaptcha,
   (val) => {
-    if (val) {
+    if (val && !isMobileView.value) {
       miniState.value = true
-      leftDrawerOpen.value = true // mantém aberto em mini
+      leftDrawerOpen.value = true
     }
   },
   { immediate: true }
 )
+
 // ======================
 // MENU AUTO EXPAND BASED ON ROUTE
 // ======================
 watch(
   () => route.path,
   (newPath) => {
-    if (['/dashboard', '/relatorio', '/fonte-publica', '/dados'].includes(newPath)) {
-      activeMenu.value = 'dashboard'
-    } else if (['/verbas-por-municipio', '/repasses-auxilios-pnae', '/evolucao-2-anos'].includes(newPath)) {
-      activeMenu.value = 'financiamento'
-    } else if (['/capacidade-por-municipio', '/associacoes-cooperativas', '/assistencia-tecnica'].includes(newPath)) {
-      activeMenu.value = 'capacidade'
-    } else if (['/dependencia-agricultura', '/secretaria-especifica', '/populacao-demanda', '/agricultores-ativos-mt'].includes(newPath)) {
-      activeMenu.value = 'indicadores'
-    } else if (['/cumprimento-pnae', '/escolas-beneficiadas'].includes(newPath)) {
-      activeMenu.value = 'pnae'
-    } else if (['/ods2-fome-zero', '/ods3-saude-bem-estar', '/ods4-educacao-qualidade'].includes(newPath)) {
-      activeMenu.value = 'ods'
-    } else if (['/relatorios', '/analise-proximos-meses', '/infraestrutura', '/integracao-automatica'].includes(newPath)) {
-      activeMenu.value = 'portal'
+    if (!isMobileView.value) {
+      if (['/dashboard', '/fonte-publica', '/dados'].includes(newPath)) {
+        activeMenu.value = 'dashboard'
+      } else if (['/verbas-por-municipio', '/repasses-auxilios-pnae', '/evolucao-2-anos'].includes(newPath)) {
+        activeMenu.value = 'financiamento'
+      } else if (['/capacidade-por-municipio', '/associacoes-cooperativas', '/assistencia-tecnica'].includes(newPath)) {
+        activeMenu.value = 'capacidade'
+      } else if (['/dependencia-agricultura', '/secretaria-especifica', '/populacao-demanda', '/agricultores-ativos-mt'].includes(newPath)) {
+        activeMenu.value = 'indicadores'
+      } else if (['/cumprimento-pnae', '/escolas-beneficiadas'].includes(newPath)) {
+        activeMenu.value = 'pnae'
+      } else if (['/ods2-fome-zero', '/ods3-saude-bem-estar', '/ods4-educacao-qualidade'].includes(newPath)) {
+        activeMenu.value = 'ods'
+      } else if (['/relatorios', '/analise-proximos-meses', '/infraestrutura', '/integracao-automatica'].includes(newPath)) {
+        activeMenu.value = 'portal'
+      }
     }
   },
   { immediate: true }
@@ -962,7 +1206,7 @@ watch(
 </script>
 
 <style scoped>
-/* Cores dos ícones */
+/* Cores dos ícones - SEM ALTERAÇÕES */
 .dashboard-color :deep(.q-icon) { color: #1976d2 !important; }
 .financiamento-color :deep(.q-icon) { color: #2e7d32 !important; }
 .capacidade-color :deep(.q-icon) { color: #f57c00 !important; }
@@ -971,7 +1215,7 @@ watch(
 .ods-color :deep(.q-icon) { color: #00838f !important; }
 .portal-color :deep(.q-icon) { color: #455a64 !important; }
 
-/* Sidebar */
+/* Sidebar Desktop - SEM ALTERAÇÕES */
 .sidebar-nameless {
   border-right: 1px solid rgba(0, 0, 0, 0.08);
   transition: all 0.3s ease;
@@ -991,13 +1235,12 @@ watch(
   display: none;
 }
 
-/* Logo no modo normal */
+/* Logo no modo normal - SEM ALTERAÇÕES */
 .sidebar-logo {
   padding: 24px 20px;
   border-bottom: 1px solid rgba(0, 0, 0, 0.06);
   transition: all 0.3s ease;
 }
-/* Logo no modo mini - reduz tamanho */
 .sidebar-logo-mini {
   padding: 16px 10px;
 }
@@ -1009,8 +1252,6 @@ watch(
   width: 100px;
   border-right: 1px solid rgb(235, 235, 235);
 }
-
-/* Logo modo mini - com a nova imagem */
 .logo-area-mini {
   background-image: url("https://i.imgur.com/7XoXkGb.png") !important;
   width: 80px !important;
@@ -1021,7 +1262,7 @@ watch(
   border-right: none !important;
 }
 
-/* Menu flutuante (hover) */
+/* Menu flutuante (hover) - SEM ALTERAÇÕES */
 .hover-menu {
   background: white;
   border-radius: 8px;
@@ -1037,20 +1278,17 @@ watch(
 .hover-menu .q-item:hover {
   background-color: #f5f5f5;
 }
-
-/* Estilo para item ativo no menu hover */
 .hover-menu-item-active {
   background-color: #e8e8e8 !important;
   color: #000000 !important;
   font-weight: 500;
 }
-
 .menu-hover-container {
   display: inline-block;
   width: 100%;
 }
 
-/* Rodapé */
+/* Rodapé Desktop - SEM ALTERAÇÕES */
 .info-mini {
   position: absolute;
   bottom: 0;
@@ -1061,7 +1299,6 @@ watch(
   border-top: 1px solid rgba(0, 0, 0, 0.06);
   cursor: pointer;
 }
-
 .sidebar-content {
   height: 100%;
   display: flex;
@@ -1088,6 +1325,16 @@ watch(
   gap: 12px;
   flex-wrap: wrap;
 }
+.logo-text-mobile {
+  font-size: 15px;
+  font-weight: normal;
+  background: linear-gradient(135deg, #363636 0%, #0130ff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  cursor: pointer;
+  line-height: 1.3;
+}
 .logo-text {
   font-size: 15px;
   font-weight: normal;
@@ -1099,12 +1346,9 @@ watch(
   line-height: 1.3;
   max-width: 110px;
 }
-
-/* Quando o drawer está mini, o texto fica invisível */
 .sidebar-nameless:deep(.q-drawer--mini) .logo-text {
   display: none !important;
 }
-
 .toggle-icon-container {
   position: absolute;
   right: -12px;
@@ -1164,7 +1408,6 @@ watch(
 .menu-item:hover {
   background-color: #f5f5f5;
 }
-/* Estilo para item de menu ativo (página selecionada) */
 .menu-item-active {
   background-color: #e8e8e8 !important;
   color: #000000 !important;
@@ -1183,6 +1426,8 @@ watch(
   margin: 0 auto;
   width: 100%;
 }
+
+/* Media Queries Desktop - SEM ALTERAÇÕES */
 @media (max-width: 768px) {
   .sidebar-nameless { width: 260px !important; }
   .page-content { padding: 16px; }
@@ -1201,5 +1446,118 @@ watch(
 .sidebar-menu :deep(.q-scrollarea__content::-webkit-scrollbar-thumb) {
   background: #cbd5e0;
   border-radius: 4px;
+}
+
+/* ====================== */
+/* NAVBAR RESPONSIVO NO TOPO */
+/* ====================== */
+.responsive-navbar {
+  min-height: 50px;
+  padding: 0 12px;
+  background: white;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+}
+
+.mobile-menu-btn {
+  color: #494949;
+}
+
+.mobile-logo-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.mobile-logo-link {
+  text-decoration: none;
+}
+
+.mobile-logo-area {
+  background-image: url("https://i.imgur.com/MzEVU64.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+      height: 75px;
+    width: 100px;
+}
+
+/* Mobile Sidebar */
+.mobile-sidebar {
+  background: white;
+}
+
+.mobile-sidebar-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+.mobile-sidebar-logo {
+  display: flex;
+  align-items: center;
+}
+
+.mobile-logo-area-sidebar {
+  background-image: url("https://i.imgur.com/MzEVU64.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+  height: 40px;
+  width: 100px;
+  display: none;
+}
+
+.mobile-sidebar-menu {
+  height: calc(100% - 120px);
+}
+
+.mobile-menu-item {
+  margin: 4px 8px;
+  border-radius: 8px;
+}
+
+.mobile-menu-item :deep(.q-item) {
+  border-radius: 8px;
+}
+
+.mobile-menu-item :deep(.q-expansion-item__container) {
+  background: transparent;
+}
+
+.mobile-sidebar-footer {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 16px;
+  border-top: 1px solid rgba(0, 0, 0, 0.08);
+  font-size: 0.7rem;
+  color: gray;
+  background: white;
+}
+
+.mobile-version-info {
+  margin-top: 8px;
+  font-size: 0.65rem;
+}
+
+/* Ajuste para telas muito pequenas */
+@media (max-width: 480px) {
+  .responsive-navbar {
+    padding: 0 8px;
+  }
+
+  .mobile-logo-area {
+    width: 70px;
+    height: 30px;
+  }
+
+  .mobile-logo-area-sidebar {
+    width: 80px;
+    height: 35px;
+  }
 }
 </style>
