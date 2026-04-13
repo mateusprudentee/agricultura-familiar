@@ -12,14 +12,13 @@
       </div>
 
       <div class="text-subtitle2 text-grey-7 text-center q-mt-sm q-mb-md">
-        Sistema em desenvolvimento para pesquisa de mestrado.
-        Dados e funcionalidades ainda em validação.
+        Você está vendo um sistema de pesquisa para o mestrado desenvolvido por  Mateus Prudente.
       </div>
 
        <!-- Aviso de segurança -->
       <q-banner class="bg-grey-3 text-grey-9 q-mb-lg" rounded>
         Este conteúdo é restrito e requer verificação de acesso.
-        Qualquer uso indevido pode comprometer a integridade da pesquisa. <b>Insira a senha abaixo.</b>
+        Insira a senha abaixo para acessar todo conteúdo do portal.
       </q-banner>
 
       <!-- 🔥 INPUT REAL PARA AUTOFILL DO NAVEGADOR -->
@@ -47,7 +46,7 @@
       </div>
 
       <div class="text-caption text-grey-6 text-center">
-        Chave de acesso institucional temporária
+        Chave de acesso temporário
       </div>
 
     </q-card>
