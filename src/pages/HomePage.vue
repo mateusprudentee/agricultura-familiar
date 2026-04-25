@@ -32,7 +32,6 @@
             </template>
           </q-input>
 
-          <q-chip icon="info" color="primary" text-color="white" style="margin-top: 30px;">Portal ainda em desenvolvimento para projeto interno. Dados ainda em análise.</q-chip>
 
           <!-- SUGESTÕES -->
           <q-card v-if="filteredSuggestions.length && showSuggestions" class="suggestions">
